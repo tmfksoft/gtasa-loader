@@ -17,6 +17,7 @@ const fs_1 = __importDefault(require("fs"));
 const img_reader_1 = __importDefault(require("@majesticfudgie/img-reader"));
 const dff_reader_1 = __importDefault(require("@majesticfudgie/dff-reader"));
 const txd_reader_1 = __importDefault(require("@majesticfudgie/txd-reader"));
+const pointer_buffer_1 = __importDefault(require("@majesticfudgie/pointer-buffer"));
 /**
  * Simple GTA SanAndreas Game Loader
  *
@@ -86,20 +87,76 @@ class GameLoader {
         console.log(`\tLoaded %s IPL Paths`, this.gtaData.ipl.length);
         console.log(`\tLoaded %s SPLASH Paths`, this.gtaData.splash.length);
     }
+    parseBinaryIPL(data) {
+        if (data.subarray(0, 4).toString() !== "bnry") {
+            console.warn("Supplied IPL is not a binary file!");
+            return [];
+        }
+        let lines = [];
+        lines.push("# IPL Converted from binary IPL");
+        const iplBuf = new pointer_buffer_1.default(data);
+        const magic = iplBuf.readString(4);
+        const numItem = iplBuf.readDWORD();
+        const numUnknown1 = iplBuf.readDWORD();
+        const numUnknown2 = iplBuf.readDWORD();
+        const numUnknown3 = iplBuf.readDWORD();
+        const numParkedCars = iplBuf.readDWORD();
+        const numUnknown4 = iplBuf.readDWORD();
+        const offsetItem = iplBuf.readDWORD();
+        // Jump to the item offset
+        iplBuf.pointer = offsetItem;
+        lines.push("inst");
+        for (let i = 0; i < numItem; i++) {
+            const posX = iplBuf.readFloat();
+            const posY = iplBuf.readFloat();
+            const posZ = iplBuf.readFloat();
+            const rotX = iplBuf.readFloat();
+            const rotY = iplBuf.readFloat();
+            const rotZ = iplBuf.readFloat();
+            const rotW = iplBuf.readFloat();
+            const objId = iplBuf.readDWORD();
+            const interiorId = iplBuf.readDWORD();
+            const lodIndex = iplBuf.readDWORD();
+            lines.push(`${objId}, dummy, ${interiorId}, ${posX}, ${posY}, ${posZ}, ${rotX}, ${rotY}, ${rotZ}, ${rotW}, ${lodIndex}`);
+        }
+        lines.push("end");
+        // Not bothering with cars just yet...
+        lines.push("cars");
+        lines.push("end");
+        return lines;
+    }
     // Loads IPL Data into memory
     loadIPL() {
         for (let iplPath of this.gtaData.ipl) {
-            const fullPath = path_1.default.join(this.gtaPath, iplPath);
-            if (!fs_1.default.existsSync(fullPath)) {
-                console.warn("Failed to find IPL: %s", fullPath);
+            const iplData = this.getFile(iplPath);
+            if (!iplData) {
+                console.warn("Failed to read IPL: %s", iplPath);
                 continue;
             }
-            const iplData = fs_1.default.readFileSync(fullPath);
+            // Only search for streamed IPLs for on disk IPLs.
+            const diskPath = path_1.default.join(this.gtaPath, iplPath);
+            if (fs_1.default.existsSync(diskPath)) {
+                const iplParsed = path_1.default.parse(iplPath);
+                if (iplParsed.ext.toLowerCase() === ".ipl") {
+                    for (let i = 0; i < 50; i++) {
+                        const filename = `${iplParsed.name}_stream${i}.ipl`;
+                        const file = this.getFile(filename);
+                        if (!file) {
+                            break;
+                        }
+                        else {
+                            this.gtaData.ipl.push(filename);
+                        }
+                    }
+                }
+            }
+            let iplLines = [];
             if (iplData.subarray(0, 4).toString() === "bnry") {
-                console.warn("%s is a binary IPL", iplPath);
-                continue;
+                iplLines = this.parseBinaryIPL(iplData);
             }
-            const iplLines = iplData.toString().split('\r\n');
+            else {
+                iplLines = iplData.toString().split('\r\n');
+            }
             let currentSection = "";
             let loadedObjects = 0;
             for (let line of iplLines) {
@@ -253,19 +310,80 @@ class GameLoader {
         }
         return null;
     }
+    // Attempts to parse a path to separate out an .img file
+    parsePath(filePath) {
+        const ex = filePath.split(path_1.default.sep);
+        const img = [];
+        const file = [];
+        let foundImage = false;
+        for (let dir of ex) {
+            if (!foundImage) {
+                img.push(dir);
+                if (dir.toLowerCase().endsWith(".img")) {
+                    foundImage = true;
+                }
+            }
+            else {
+                file.push(dir);
+            }
+        }
+        if (file.length === 0) {
+            return {
+                img: "",
+                file: path_1.default.join(...img),
+            };
+        }
+        return {
+            img: path_1.default.join(...img),
+            file: path_1.default.join(...file),
+        };
+    }
+    /**
+     * Attempts to fetch a file that either resides on disk or in an IMG archive
+     *
+     * Supported paths:
+     *
+     *  DATA\MAPS\LA\LAe.ipl - File on Disk
+     * 	LAe_stream0.ipl - File in IMG
+     *  MODELS\gta3.img\LAe_stream0.ipl
+     *
+     * @param filename
+     * @returns
+     */
     getFile(filename) {
-        const img = this.getAssociatedIMG(filename);
-        if (!img) {
-            console.warn("Couldn't find %s", filename);
-            return null;
+        const parsedPath = this.parsePath(filename);
+        if (parsedPath.img === "") {
+            if (fs_1.default.existsSync(path_1.default.join(this.gtaPath, parsedPath.file))) {
+                return fs_1.default.readFileSync(path_1.default.join(this.gtaPath, parsedPath.file));
+            }
         }
-        const reader = this.getIMGReader(img);
-        if (!reader) {
-            console.warn("Error fetching IMG Reader for %s", img);
-            return null;
+        const img = this.getAssociatedIMG(parsedPath.file);
+        let reader = null;
+        if (img) {
+            reader = this.getIMGReader(img);
+            if (!reader) {
+                console.warn("Couldn't find IMG Reader for %s", img);
+                return null;
+            }
         }
-        const file = reader.readFile(filename);
+        else {
+            if (parsedPath.img === "") {
+                console.warn("File %s doesn't exist!", parsedPath.file);
+                return null;
+            }
+            // Load the IMG
+            const imgPath = path_1.default.join(this.gtaPath, parsedPath.img);
+            if (!fs_1.default.existsSync(imgPath)) {
+                console.warn("IMG file %s doesn't exist!", parsedPath.img);
+                return null;
+            }
+            const imgData = fs_1.default.readFileSync(imgPath);
+            reader = new img_reader_1.default(imgData);
+            this.imgReaders[parsedPath.img] = reader;
+        }
+        const file = reader.readFile(parsedPath.file);
         if (!file) {
+            console.warn("Couldn't find %s in reader", parsedPath.file);
             return null;
         }
         return file;
@@ -308,9 +426,10 @@ class GameLoader {
         return __awaiter(this, void 0, void 0, function* () {
             // Load GTA Data
             this.loadGTADat();
+            // Load in resources as needed.
+            this.loadIMG();
             this.loadIDE();
             this.loadIPL();
-            this.loadIMG();
         });
     }
 }

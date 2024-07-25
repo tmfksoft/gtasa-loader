@@ -132,6 +132,11 @@
   resolved "https://registry.yarnpkg.com/@majesticfudgie/img-reader/-/img-reader-1.0.0.tgz#e14ef6bbdae77db7adea01aa0296cf22e5879542"
   integrity sha512-eUhYIeU920mFywHxWWyjWM6Mi4o+Ugs/ODXwgxL1Jx7eTYXjHfdzgHf74S2PH/d3Kq9mPog8xZZf5CDdagHZLA==
 
+"@majesticfudgie/pointer-buffer@^1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@majesticfudgie/pointer-buffer/-/pointer-buffer-1.0.1.tgz#3786ab27879704e65d4244b7b99bba54275e58e4"
+  integrity sha512-yWpoCC8fTZv2bopY9jh59EmFDkZMHUktGVFGPdCMe2q1bgIslU3C9OOd3qQIM3sF8VMnK1rQlJHleq0XDiCU/A==
+
 "@majesticfudgie/txd-reader@^1.0.3":
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/@majesticfudgie/txd-reader/-/txd-reader-1.0.3.tgz#132bd379d9baf5f3c42da88b6428df71be35678f"

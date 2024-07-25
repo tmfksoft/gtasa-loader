@@ -28,11 +28,28 @@ declare class GameLoader {
     };
     constructor(gtaPath: string);
     loadGTADat(): void;
+    parseBinaryIPL(data: Buffer): string[];
     loadIPL(): void;
     loadIDE(): void;
     getObject(id: number): IDEObject | IDETimedObject | null;
     loadIMG(): void;
     getAssociatedIMG(filename: string): string | null;
+    parsePath(filePath: string): {
+        img: string;
+        file: string;
+    };
+    /**
+     * Attempts to fetch a file that either resides on disk or in an IMG archive
+     *
+     * Supported paths:
+     *
+     *  DATA\MAPS\LA\LAe.ipl - File on Disk
+     * 	LAe_stream0.ipl - File in IMG
+     *  MODELS\gta3.img\LAe_stream0.ipl
+     *
+     * @param filename
+     * @returns
+     */
     getFile(filename: string): Buffer | null;
     getIMGReader(imgFile: string): IMGReader | null;
     getDFF(filename: string): DFFReader | null;
