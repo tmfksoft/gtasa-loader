@@ -1,0 +1,20 @@
+{
+  "name": "gtasa-loader",
+  "version": "1.0.0",
+  "main": "build/index.js",
+  "typings": "build/index.d.ts",
+  "scripts": {
+    "start": "node .",
+    "build": "tsc"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@majesticfudgie/dff-reader": "^1.0.2",
+    "@majesticfudgie/img-reader": "^1.0.0",
+    "@majesticfudgie/txd-reader": "^1.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.12",
+    "typescript": "^5.5.4"
+  }
+}
