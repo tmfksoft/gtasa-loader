@@ -9,6 +9,8 @@ import IMGReader from "@majesticfudgie/img-reader";
 import DFFReader from "@majesticfudgie/dff-reader";
 import TXDReader from "@majesticfudgie/txd-reader";
 import PointerBuffer from "@majesticfudgie/pointer-buffer";
+import ParsedIPL from "./interfaces/ParsedIPL";
+import MainIPL from "./interfaces/MainIPL";
 
 /**
  * Simple GTA SanAndreas Game Loader
@@ -39,7 +41,7 @@ class GameLoader {
 	};
 
 	// Objects
-	public iplObjects: IPLObject[] = [];
+	public loadedIPLs: MainIPL[] = [];
 	public ideObjects: IDEObject[] = [];
 	public ideTimedObjects: IDETimedObject[] = [];
 
@@ -91,92 +93,96 @@ class GameLoader {
 		console.log(`\tLoaded %s SPLASH Paths`, this.gtaData.splash.length);
 	}
 
-	parseBinaryIPL(data: Buffer): string[] {
-		if (data.subarray(0, 4).toString() !== "bnry") {
-			console.warn("Supplied IPL is not a binary file!");
-			return [];
+	parseBinaryIPL(name: string | string[], data: Buffer | Buffer[]): ParsedIPL {
+		
+		const parsedIPL: ParsedIPL = {
+			name,
+			inst: [],
+		};
+
+		const bufList: Buffer[] = [];
+
+		if (!Array.isArray(data)) {
+			bufList.push(data);
+		} else {
+			bufList.push(...data);
+		}
+		
+		for (let iplData of bufList) {
+			
+			if (iplData.subarray(0, 4).toString() !== "bnry") {
+				throw new Error("Supplied IPL is not a binary file!");
+			}
+
+			const iplBuf = new PointerBuffer(iplData);
+
+			const magic = iplBuf.readString(4);
+			const numItem = iplBuf.readDWORD();
+			const numUnknown1 = iplBuf.readDWORD();
+			const numUnknown2 = iplBuf.readDWORD();
+			const numUnknown3 = iplBuf.readDWORD();
+			const numParkedCars = iplBuf.readDWORD();
+			const numUnknown4 = iplBuf.readDWORD();
+			const offsetItem = iplBuf.readDWORD();
+
+			// Jump to the item offset
+			iplBuf.pointer = offsetItem;
+
+			for (let i=0; i<numItem; i++) {
+				const posX = iplBuf.readFloat();
+				const posY = iplBuf.readFloat();
+				const posZ = iplBuf.readFloat();
+				const rotX = iplBuf.readFloat();
+				const rotY = iplBuf.readFloat();
+				const rotZ = iplBuf.readFloat();
+				const rotW = iplBuf.readFloat();
+				const objId = iplBuf.readDWORD();
+				const interiorId = iplBuf.readDWORD();
+				const lodIndex = iplBuf.readDWORD();
+				
+				parsedIPL.inst.push({
+					id: objId,
+					modelName: "dummy",
+					interior: interiorId,
+					position: {
+						x: posX,
+						y: posY,
+						z: posZ,
+					},
+					rotation: {
+						x: rotX,
+						y: rotY,
+						z: rotZ,
+						w: rotW,
+					},
+					lod: lodIndex,
+					iplIndex: i,
+				});
+			}
 		}
 
-		let lines: string[] = [];
-
-		lines.push("# IPL Converted from binary IPL");
-
-		const iplBuf = new PointerBuffer(data);
-
-		const magic = iplBuf.readString(4);
-		const numItem = iplBuf.readDWORD();
-		const numUnknown1 = iplBuf.readDWORD();
-		const numUnknown2 = iplBuf.readDWORD();
-		const numUnknown3 = iplBuf.readDWORD();
-		const numParkedCars = iplBuf.readDWORD();
-		const numUnknown4 = iplBuf.readDWORD();
-		const offsetItem = iplBuf.readDWORD();
-
-		// Jump to the item offset
-		iplBuf.pointer = offsetItem;
-
-		lines.push("inst");
-		for (let i=0; i<numItem; i++) {
-			const posX = iplBuf.readFloat();
-			const posY = iplBuf.readFloat();
-			const posZ = iplBuf.readFloat();
-			const rotX = iplBuf.readFloat();
-			const rotY = iplBuf.readFloat();
-			const rotZ = iplBuf.readFloat();
-			const rotW = iplBuf.readFloat();
-			const objId = iplBuf.readDWORD();
-			const interiorId = iplBuf.readDWORD();
-			const lodIndex = iplBuf.readDWORD();
-
-			lines.push(`${objId}, dummy, ${interiorId}, ${posX}, ${posY}, ${posZ}, ${rotX}, ${rotY}, ${rotZ}, ${rotW}, ${lodIndex}`);
-		}
-		lines.push("end");
-
-		// Not bothering with cars just yet...
-		lines.push("cars");
-		lines.push("end");
-
-		return lines;
+		return parsedIPL;
 	}
 
-	// Loads IPL Data into memory
-	loadIPL() {
-		for (let iplPath of this.gtaData.ipl) {
+	parseTextIPL(name: string | string[], data: Buffer | Buffer[]): ParsedIPL {
+		const parsedIPL: ParsedIPL = {
+			name,
+			inst: [],
+		};
 
-			const iplData = this.getFile(iplPath);
-			if (!iplData) {
-				console.warn("Failed to read IPL: %s", iplPath);
-				continue;
-			}
+		const iplBuf: Buffer[] = [];
 
-			
-			// Only search for streamed IPLs for on disk IPLs.
-			const diskPath = path.join(this.gtaPath, iplPath);
-			if (fs.existsSync(diskPath)) {
+		if (Array.isArray(data)) {
+			iplBuf.push(...data);
+		} else {
+			iplBuf.push(data);
+		}
 
-				const iplParsed = path.parse(iplPath);
-				if (iplParsed.ext.toLowerCase() === ".ipl") {
-					for (let i=0; i<50; i++) {
-						const filename = `${iplParsed.name}_stream${i}.ipl`;
-						const file = this.getFile(filename);
-						if (!file) {
-							break;
-						} else {
-							this.gtaData.ipl.push(filename);
-						}
-					}
-				}
-			}
+		for (let iplData of iplBuf) {
 
-			let iplLines: string[] = [];
-			if (iplData.subarray(0, 4).toString() === "bnry") {
-				iplLines = this.parseBinaryIPL(iplData);
-			} else {
-				iplLines = iplData.toString().split('\r\n');
-			}
+			const iplLines = iplData.toString().split('\r\n');
 
 			let currentSection = "";
-			let loadedObjects = 0;
 
 			for (let line of iplLines) {
 				if (line === "end") {
@@ -189,8 +195,9 @@ class GameLoader {
 				}
 
 				if (currentSection === "inst") {
+
 					const ex = line.split(",");
-					const iplObject = {
+					const iplObject: IPLObject = {
 						id: parseInt(ex[0]),
 						modelName: ex[1].trim(),
 						interior: parseInt(ex[2]),
@@ -206,16 +213,76 @@ class GameLoader {
 							w: parseFloat(ex[9]),
 						},
 						lod: parseInt(ex[10]),
+						iplIndex: parsedIPL.inst.length
 					};
-					this.iplObjects.push(iplObject);
-					loadedObjects++;
+					parsedIPL.inst.push(iplObject);
+				}
+			}
+		}
+
+		return parsedIPL;
+	}
+
+
+	// Loads IPL Data into memory
+	loadIPL() {
+
+		for (let iplPath of this.gtaData.ipl) {
+
+			const iplData = this.getFile(iplPath);
+			if (!iplData) {
+				console.warn("Failed to read IPL: %s", iplPath);
+				continue;
+			}
+
+			const parsedPath = path.parse(iplPath);
+
+			const parsedIPL = this.parseTextIPL(iplPath, iplData);
+
+			const mainIPL: MainIPL = {
+				name: parsedPath.name,
+				iplObjects: parsedIPL.inst,
+				streamedObjects: [],
+			};
+
+			// Attempt to pre-stream IPLs
+			const streamFiles: string[] = [];
+			const streamBuffers: Buffer[] = [];
+
+			for (let i=0; i<50; i++) {
+				const filename = `${mainIPL.name}_stream${i}.ipl`;
+				const iplFile = this.getFile(filename);
+
+				if (!iplFile) {
+					break;
+				}
+
+				streamFiles.push(filename);
+				streamBuffers.push(iplFile);
+			}
+
+			if (streamFiles.length > 0) {
+				const streamedIPL = this.parseBinaryIPL(streamFiles, streamBuffers);
+
+				// Link LODs
+				for (let streamObj of streamedIPL.inst) {
+					if (streamObj.lod >= 0) {
+						streamObj.lodObject = mainIPL.iplObjects[streamObj.lod];
+					}
+				}
+
+				mainIPL.streamedObjects.push( ...streamedIPL.inst );
+			}
+
+			for (let staticObj of mainIPL.iplObjects) {
+				if (staticObj.lod >= 0) {
+					staticObj.lodObject = mainIPL.iplObjects[staticObj.lod];
 				}
 			}
 
-			console.log("Loaded %s IPL Objects from %s",loadedObjects, iplPath);
+			this.loadedIPLs.push(mainIPL);
 		}
 
-		console.log(`Loaded %s IPL Objects`, this.iplObjects.length);
 	}
 
 	// Loads IDE Data into memory

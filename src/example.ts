@@ -8,12 +8,15 @@
  */
 
 import GameLoader from ".";
+import fs from 'fs';
+import path from 'path';
 
 async function start() {
 		
 	// Change to your game path.
 	const game = new GameLoader("D:\\Games\\Grand Theft Auto San Andreas (SAMP)");
 	await game.load();
+
 
 }
 start();

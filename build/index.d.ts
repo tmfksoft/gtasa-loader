@@ -1,10 +1,11 @@
 import GTADat from "./interfaces/GTADat";
-import IPLObject from "./interfaces/IPLObject";
 import IDEObject from "./interfaces/IDEObject";
 import IDETimedObject from "./interfaces/IDETimedObject";
 import IMGReader from "@majesticfudgie/img-reader";
 import DFFReader from "@majesticfudgie/dff-reader";
 import TXDReader from "@majesticfudgie/txd-reader";
+import ParsedIPL from "./interfaces/ParsedIPL";
+import MainIPL from "./interfaces/MainIPL";
 /**
  * Simple GTA SanAndreas Game Loader
  *
@@ -17,7 +18,7 @@ import TXDReader from "@majesticfudgie/txd-reader";
 declare class GameLoader {
     protected gtaPath: string;
     gtaData: GTADat;
-    iplObjects: IPLObject[];
+    loadedIPLs: MainIPL[];
     ideObjects: IDEObject[];
     ideTimedObjects: IDETimedObject[];
     imgReaders: {
@@ -28,7 +29,8 @@ declare class GameLoader {
     };
     constructor(gtaPath: string);
     loadGTADat(): void;
-    parseBinaryIPL(data: Buffer): string[];
+    parseBinaryIPL(name: string | string[], data: Buffer | Buffer[]): ParsedIPL;
+    parseTextIPL(name: string | string[], data: Buffer | Buffer[]): ParsedIPL;
     loadIPL(): void;
     loadIDE(): void;
     getObject(id: number): IDEObject | IDETimedObject | null;

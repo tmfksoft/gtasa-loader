@@ -14,4 +14,6 @@ export default interface IPLObject {
         w: number;
     };
     lod: number;
+    lodObject?: IPLObject;
+    iplIndex: number;
 }
