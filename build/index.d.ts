@@ -56,6 +56,12 @@ declare class GameLoader {
     getIMGReader(imgFile: string): IMGReader | null;
     getDFF(filename: string): DFFReader | null;
     getTXD(filename: string): TXDReader | null;
+    /**
+     * Returns a PNG of the supplied texture path.
+     * Null if the texture doesn't exist.
+     * @param filename Path to texture `blah.txd/name` or `models/gta3.img/blah.txd/name` etc
+     */
+    getTexture(filename: string): Promise<Buffer | null>;
     load(): Promise<void>;
 }
 export default GameLoader;

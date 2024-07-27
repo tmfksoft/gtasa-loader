@@ -426,7 +426,9 @@ class GameLoader {
 		return null;
 	}
 
-	// Attempts to parse a path to separate out an .img file
+	// Attempts to parse a path to separate out an archive file
+	// IMG, TXD and DFF are all treated as 'archive' files as they contain
+	// named resources.
 	parsePath(filePath: string): { archive: string, file: string } {
 		const ex = filePath.split(path.sep);
 
@@ -434,10 +436,23 @@ class GameLoader {
 		const file: string[] = [];
 		let foundImage = false;
 
+		const archiveFiles = [
+			"img",
+			"txd",
+			"dff",
+		];
+
 		for (let dir of ex) {
 			if (!foundImage) {
 				img.push(dir);
-				if (dir.toLowerCase().endsWith(".img")) {
+
+				const ex = dir.split(".");
+				let ext = "";
+				if (ex.length >= 2) {
+					ext = ex[ex.length - 1]
+				}
+
+				if (archiveFiles.includes(ext.toLowerCase())) {
 					foundImage = true;
 				}
 			} else {
@@ -557,6 +572,35 @@ class GameLoader {
 
 		const reader = new TXDReader(rawTXD);
 		return reader;
+	}
+
+	/**
+	 * Returns a PNG of the supplied texture path.
+	 * Null if the texture doesn't exist.
+	 * @param filename Path to texture `blah.txd/name` or `models/gta3.img/blah.txd/name` etc
+	 */
+	async getTexture(filename: string): Promise<Buffer | null> {
+		const parsedPath = this.parsePath(filename);
+
+		let txdPath = parsedPath.archive;
+		let textureName = parsedPath.file;
+
+		// Support TXD files within gta3.img
+		if (parsedPath.archive.endsWith(".img")) {
+			const furtherParsed = this.parsePath(parsedPath.file);
+			txdPath = path.join(txdPath, furtherParsed.archive);
+			textureName = furtherParsed.file;
+		}
+
+		const txd = this.getTXD(txdPath);
+
+		if (!txd) {
+			return null;
+		}
+
+		const tex = txd.getPNG(textureName);
+
+		return tex;
 	}
 
 	async load() {
