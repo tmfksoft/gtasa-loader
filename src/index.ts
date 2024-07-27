@@ -431,7 +431,7 @@ class GameLoader {
 	// named resources.
 	parsePath(filePath: string): { archive: string, file: string } {
 		const ex = filePath.split(path.sep);
-
+		
 		const img: string[] = [];
 		const file: string[] = [];
 		let foundImage = false;
@@ -489,8 +489,16 @@ class GameLoader {
 		const parsedPath = this.parsePath(filename);
 		
 		if (parsedPath.archive === "") {
-			if (fs.existsSync(path.join(this.gtaPath, parsedPath.file))) {
-				return fs.readFileSync(path.join(this.gtaPath, parsedPath.file));
+			const filePath = path.join(this.gtaPath, parsedPath.file);
+			if (fs.existsSync(filePath)) {
+
+				// Ignore directories
+				const fileStat = fs.statSync(filePath);
+				if (fileStat.isDirectory()) {
+					return null;
+				}
+
+				return fs.readFileSync(filePath);
 			}
 		}
 		

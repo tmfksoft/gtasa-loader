@@ -25,7 +25,7 @@ function start() {
         // Change to your game path.
         const game = new _1.default("D:\\Games\\Grand Theft Auto San Andreas (SAMP)");
         yield game.load();
-        const hudTexture = "radar58.txd\\radar58";
+        const hudTexture = "models\\hud.txt\\radardisc";
         const radar58 = yield game.getTexture(hudTexture);
         const back2 = yield game.getTexture("models\\fronten2.txd\\back2");
         console.log({

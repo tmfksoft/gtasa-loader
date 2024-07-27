@@ -412,8 +412,14 @@ class GameLoader {
     getFile(filename) {
         const parsedPath = this.parsePath(filename);
         if (parsedPath.archive === "") {
-            if (fs_1.default.existsSync(path_1.default.join(this.gtaPath, parsedPath.file))) {
-                return fs_1.default.readFileSync(path_1.default.join(this.gtaPath, parsedPath.file));
+            const filePath = path_1.default.join(this.gtaPath, parsedPath.file);
+            if (fs_1.default.existsSync(filePath)) {
+                // Ignore directories
+                const fileStat = fs_1.default.statSync(filePath);
+                if (fileStat.isDirectory()) {
+                    return null;
+                }
+                return fs_1.default.readFileSync(filePath);
             }
         }
         const img = this.getAssociatedIMG(parsedPath.file);
