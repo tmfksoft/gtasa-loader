@@ -376,12 +376,12 @@ class GameLoader {
         }
         if (file.length === 0) {
             return {
-                img: "",
+                archive: "",
                 file: path_1.default.join(...img),
             };
         }
         return {
-            img: path_1.default.join(...img),
+            archive: path_1.default.join(...img),
             file: path_1.default.join(...file),
         };
     }
@@ -399,7 +399,7 @@ class GameLoader {
      */
     getFile(filename) {
         const parsedPath = this.parsePath(filename);
-        if (parsedPath.img === "") {
+        if (parsedPath.archive === "") {
             if (fs_1.default.existsSync(path_1.default.join(this.gtaPath, parsedPath.file))) {
                 return fs_1.default.readFileSync(path_1.default.join(this.gtaPath, parsedPath.file));
             }
@@ -414,19 +414,19 @@ class GameLoader {
             }
         }
         else {
-            if (parsedPath.img === "") {
+            if (parsedPath.archive === "") {
                 console.warn("File %s doesn't exist!", parsedPath.file);
                 return null;
             }
             // Load the IMG
-            const imgPath = path_1.default.join(this.gtaPath, parsedPath.img);
+            const imgPath = path_1.default.join(this.gtaPath, parsedPath.archive);
             if (!fs_1.default.existsSync(imgPath)) {
-                console.warn("IMG file %s doesn't exist!", parsedPath.img);
+                console.warn("IMG file %s doesn't exist!", parsedPath.archive);
                 return null;
             }
             const imgData = fs_1.default.readFileSync(imgPath);
             reader = new img_reader_1.default(imgData);
-            this.imgReaders[parsedPath.img] = reader;
+            this.imgReaders[parsedPath.archive] = reader;
         }
         const file = reader.readFile(parsedPath.file);
         if (!file) {

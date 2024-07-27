@@ -37,7 +37,7 @@ declare class GameLoader {
     loadIMG(): void;
     getAssociatedIMG(filename: string): string | null;
     parsePath(filePath: string): {
-        img: string;
+        archive: string;
         file: string;
     };
     /**
