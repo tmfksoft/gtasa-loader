@@ -167,11 +167,19 @@ class GameLoader {
             const iplLines = iplData.toString().split('\r\n');
             let currentSection = "";
             for (let line of iplLines) {
-                if (line === "end") {
-                    currentSection = "";
-                }
-                if (line === "inst") {
-                    currentSection = "inst";
+                if (line.trim().split(" ").length === 1) {
+                    if (line === "end") {
+                        if (currentSection == "") {
+                            throw new Error("Unexpected section end in IPL");
+                        }
+                        currentSection = "";
+                    }
+                    else {
+                        if (currentSection !== "") {
+                            throw new Error("Already inside " + currentSection + " section!");
+                        }
+                        currentSection = line;
+                    }
                     continue;
                 }
                 if (currentSection === "inst") {
@@ -225,6 +233,7 @@ class GameLoader {
                         // Nope, chuck testa
                         cullObj.unknown3 = parseInt(ex[10]);
                     }
+                    parsedIPL.cull.push(cullObj);
                 }
             }
         }

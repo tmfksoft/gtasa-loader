@@ -28,9 +28,7 @@ function start() {
         const hudTexture = "models\\hud.txt\\radardisc";
         const radar58 = yield game.getTexture(hudTexture);
         const back2 = yield game.getTexture("models\\fronten2.txd\\back2");
-        console.log({
-            radar58, back2
-        });
+        console.log(game.loadedIPLs.filter(ipl => ipl.cullZones.length > 0));
     });
 }
 start();

@@ -22,8 +22,6 @@ async function start() {
 
 	const back2 = await game.getTexture("models\\fronten2.txd\\back2");
 
-	console.log({
-		radar58, back2
-	});
+	console.log(game.loadedIPLs.filter(ipl => ipl.cullZones.length > 0));
 }
 start();
