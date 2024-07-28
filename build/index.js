@@ -243,6 +243,7 @@ class GameLoader {
             const mainIPL = {
                 name: parsedPath.name,
                 iplObjects: parsedIPL.inst,
+                cullZones: parsedIPL.cull,
                 streamedObjects: [],
             };
             // Attempt to pre-stream IPLs

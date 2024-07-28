@@ -280,6 +280,7 @@ class GameLoader {
 			const mainIPL: MainIPL = {
 				name: parsedPath.name,
 				iplObjects: parsedIPL.inst,
+				cullZones: parsedIPL.cull,
 				streamedObjects: [],
 			};
 
