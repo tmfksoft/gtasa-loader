@@ -6,6 +6,7 @@ import DFFReader from "@majesticfudgie/dff-reader";
 import TXDReader from "@majesticfudgie/txd-reader";
 import ParsedIPL from "./interfaces/ParsedIPL";
 import MainIPL from "./interfaces/MainIPL";
+import WeatherDefinition from "./interfaces/WeatherDefinition";
 /**
  * Simple GTA SanAndreas Game Loader
  *
@@ -21,6 +22,7 @@ declare class GameLoader {
     loadedIPLs: MainIPL[];
     ideObjects: IDEObject[];
     ideTimedObjects: IDETimedObject[];
+    weatherDefinitions: WeatherDefinition[];
     imgReaders: {
         [key: string]: IMGReader;
     };
@@ -62,6 +64,7 @@ declare class GameLoader {
      * @param filename Path to texture `blah.txd/name` or `models/gta3.img/blah.txd/name` etc
      */
     getTexture(filename: string): Promise<Buffer | null>;
+    loadWeather(): void;
     load(): Promise<void>;
 }
 export default GameLoader;

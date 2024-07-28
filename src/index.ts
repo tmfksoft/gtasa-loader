@@ -11,6 +11,8 @@ import TXDReader from "@majesticfudgie/txd-reader";
 import PointerBuffer from "@majesticfudgie/pointer-buffer";
 import ParsedIPL from "./interfaces/ParsedIPL";
 import MainIPL from "./interfaces/MainIPL";
+import CullZone from "./interfaces/CullZone";
+import WeatherDefinition from "./interfaces/WeatherDefinition";
 
 /**
  * Simple GTA SanAndreas Game Loader
@@ -44,6 +46,9 @@ class GameLoader {
 	public loadedIPLs: MainIPL[] = [];
 	public ideObjects: IDEObject[] = [];
 	public ideTimedObjects: IDETimedObject[] = [];
+
+	// Misc
+	public weatherDefinitions: WeatherDefinition[] = [];
 
 	// IMG Files
 	public imgReaders: { [key: string]: IMGReader } = {};
@@ -98,6 +103,7 @@ class GameLoader {
 		const parsedIPL: ParsedIPL = {
 			name,
 			inst: [],
+			cull: [],
 		};
 
 		const bufList: Buffer[] = [];
@@ -168,6 +174,7 @@ class GameLoader {
 		const parsedIPL: ParsedIPL = {
 			name,
 			inst: [],
+			cull: [],
 		};
 
 		const iplBuf: Buffer[] = [];
@@ -216,6 +223,37 @@ class GameLoader {
 						iplIndex: parsedIPL.inst.length
 					};
 					parsedIPL.inst.push(iplObject);
+				}
+
+				if (currentSection === "cull") {
+					const ex = line.split(",");
+					const cullObj: CullZone = {
+						center: {
+							x: parseFloat(ex[0]),
+							y: parseFloat(ex[1]),
+							z: parseFloat(ex[2]),
+						},
+						unknown1: parseInt(ex[3]),
+						length: parseFloat(ex[4]),
+						bottom: parseFloat(ex[5]),
+						width: parseFloat(ex[6]),
+						unknown2: parseInt(ex[7]),
+						top: parseFloat(ex[8]),
+						type: parseInt(ex[9]), // Also known as 'flag'
+					};
+
+					if (ex.length === 14) {
+						// Extended zone definition, a mirror!
+						cullObj.mirrorParameters = {
+							x: parseFloat(ex[10]),
+							y: parseFloat(ex[11]),
+							z: parseFloat(ex[12]),
+							Cm: parseFloat(ex[13]),
+						};
+					} else {
+						// Nope, chuck testa
+						cullObj.unknown3 = parseInt(ex[10]);
+					}
 				}
 			}
 		}
@@ -611,6 +649,119 @@ class GameLoader {
 		return tex;
 	}
 
+	public loadWeather() {
+		// We'll ignore the PAL version.
+		const timeCycPath = path.join(this.gtaPath, "data", "timecyc.dat");
+
+		if (!fs.existsSync(timeCycPath)) {
+			throw new Error("Missing timecyc.dat!");
+		}
+
+		const timeCycData = fs.readFileSync(timeCycPath);
+		const lines = timeCycData.toString().split('\r\n');
+
+		for (let line of lines) {
+			if (line.trim() === "" || line.trim().startsWith("//")) {
+				// Skip comments
+				continue;
+			}
+			const ex = line.split('\t').join(" ").split(" ");
+			
+			const weather: WeatherDefinition = {
+				ambientColor: {
+					r: parseInt(ex[0]),
+					g: parseInt(ex[1]),
+					b: parseInt(ex[2]),
+					a: 255,
+				},
+				ambientObjectColor: {
+					r: parseInt(ex[3]),
+					g: parseInt(ex[4]),
+					b: parseInt(ex[5]),
+					a: 255,
+				},
+				directLight: {
+					r: parseInt(ex[6]),
+					g: parseInt(ex[7]),
+					b: parseInt(ex[8]),
+					a: 255,
+				},
+				skyTop: {
+					r: parseInt(ex[9]),
+					g: parseInt(ex[10]),
+					b: parseInt(ex[11]),
+					a: 255,
+				},
+				skyBottom: {
+					r: parseInt(ex[12]),
+					g: parseInt(ex[13]),
+					b: parseInt(ex[14]),
+					a: 255,
+				},
+				sunCore: {
+					r: parseInt(ex[15]),
+					g: parseInt(ex[16]),
+					b: parseInt(ex[17]),
+					a: 255,
+				},
+				sunCorona: {
+					r: parseInt(ex[18]),
+					g: parseInt(ex[19]),
+					b: parseInt(ex[20]),
+					a: 255,
+				},
+				sunSize: parseFloat(ex[21]),
+				spriteSize: parseFloat(ex[22]),
+				spriteBrightness: parseFloat(ex[23]),
+				shadowIntensity: parseInt(ex[24]),
+				lightShd: parseInt(ex[25]),
+				poleShd: parseInt(ex[26]),
+				farClipping: parseFloat(ex[27]),
+				fogStart: parseFloat(ex[28]),
+				lightOnGround: parseFloat(ex[29]),
+				lowCloudsColor: {
+					r: parseInt(ex[30]),
+					g: parseInt(ex[31]),
+					b: parseInt(ex[32]),
+					a: 255,
+				},
+				bottomCloudColor: {
+					r: parseInt(ex[33]),
+					g: parseInt(ex[34]),
+					b: parseInt(ex[35]),
+					a: 255,
+				},
+				waterColor: {
+					r: parseInt(ex[36]),
+					g: parseInt(ex[37]),
+					b: parseInt(ex[38]),
+					a: parseInt(ex[39]),
+				},
+				alpha1: parseInt(ex[40]),
+				RGB1: {
+					r: parseInt(ex[41]),
+					g: parseInt(ex[42]),
+					b: parseInt(ex[43]),
+					a: 255,
+				},
+				alpha2: parseInt(ex[44]),
+				RGB2: {
+					r: parseInt(ex[45]),
+					g: parseInt(ex[46]),
+					b: parseInt(ex[47]),
+					a: 255,
+				},
+				cloudAlpha: {
+					r: parseInt(ex[48]),
+					g: parseInt(ex[49]),
+					b: parseInt(ex[50]),
+					a: 255,
+				},
+			};
+			this.weatherDefinitions.push(weather);
+		}
+	}
+
 	async load() {
 		// Load GTA Data
 		this.loadGTADat();
@@ -619,6 +770,7 @@ class GameLoader {
 		this.loadIMG();
 		this.loadIDE();
 		this.loadIPL();
+		this.loadWeather();
 	}
 }
 export default GameLoader;
