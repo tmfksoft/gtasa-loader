@@ -13,7 +13,8 @@ declare enum CullZoneType {
     WaterFudge = 1024,// VC
     MilitaryZone = 4096,// SA
     ExtraAirResistance = 16384,// SA
-    FewerCars = 32768
+    FewerCars = 32768,// SA
+    UNKNOWN2 = 33792
 }
 export default interface CullZone {
     center: {

@@ -17,11 +17,5 @@ async function start() {
 	const game = new GameLoader("D:\\Games\\Grand Theft Auto San Andreas (SAMP)");
 	await game.load();
 
-	const hudTexture = "models\\hud.txt\\radardisc";
-	const radar58 = await game.getTexture(hudTexture);
-
-	const back2 = await game.getTexture("models\\fronten2.txd\\back2");
-
-	console.log(game.loadedIPLs.filter(ipl => ipl.cullZones.length > 0));
 }
 start();

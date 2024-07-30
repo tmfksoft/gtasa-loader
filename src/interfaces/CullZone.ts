@@ -18,6 +18,9 @@ enum CullZoneType {
 	MilitaryZone = 4096, // SA
 	ExtraAirResistance = 16384, // SA
 	FewerCars = 32768, // SA
+
+	// Some unknown zones I've seen
+	UNKNOWN2 = 33792, // Seen in LS
 }
 
 export default interface CullZone {

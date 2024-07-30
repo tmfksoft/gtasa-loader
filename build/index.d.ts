@@ -7,6 +7,7 @@ import TXDReader from "@majesticfudgie/txd-reader";
 import ParsedIPL from "./interfaces/ParsedIPL";
 import MainIPL from "./interfaces/MainIPL";
 import WeatherDefinition from "./interfaces/WeatherDefinition";
+import WaterDefinition from "./interfaces/WaterDefinition";
 /**
  * Simple GTA SanAndreas Game Loader
  *
@@ -22,6 +23,7 @@ declare class GameLoader {
     loadedIPLs: MainIPL[];
     ideObjects: IDEObject[];
     ideTimedObjects: IDETimedObject[];
+    waterDefinitions: WaterDefinition[];
     weatherDefinitions: WeatherDefinition[];
     imgReaders: {
         [key: string]: IMGReader;
@@ -31,6 +33,7 @@ declare class GameLoader {
     };
     constructor(gtaPath: string);
     loadGTADat(): void;
+    loadWaterDefinitions(): void;
     parseBinaryIPL(name: string | string[], data: Buffer | Buffer[]): ParsedIPL;
     parseTextIPL(name: string | string[], data: Buffer | Buffer[]): ParsedIPL;
     loadIPL(): void;

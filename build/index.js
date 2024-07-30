@@ -48,6 +48,7 @@ class GameLoader {
         this.loadedIPLs = [];
         this.ideObjects = [];
         this.ideTimedObjects = [];
+        this.waterDefinitions = [];
         // Misc
         this.weatherDefinitions = [];
         // IMG Files
@@ -88,6 +89,66 @@ class GameLoader {
         console.log(`\tLoaded %s IDE Paths`, this.gtaData.ide.length);
         console.log(`\tLoaded %s IPL Paths`, this.gtaData.ipl.length);
         console.log(`\tLoaded %s SPLASH Paths`, this.gtaData.splash.length);
+    }
+    loadWaterDefinitions() {
+        const waterFilePath = path_1.default.join(this.gtaPath, "data", "water.dat");
+        if (!fs_1.default.existsSync(waterFilePath)) {
+            throw new Error("Unable to find water.dat");
+        }
+        const waterDat = fs_1.default.readFileSync(waterFilePath);
+        let lines = waterDat.toString().split('\n');
+        for (let line of lines) {
+            if (line.trim().startsWith("#") || line.trim() === "processed" || line.trim() === "") {
+                continue;
+            }
+            const ex = line.split(" ").filter((word) => word.length > 0);
+            const waterDef = {
+                point1: {
+                    x: parseFloat(ex[0]),
+                    y: parseFloat(ex[1]),
+                    z: parseFloat(ex[2]),
+                    speedX: parseFloat(ex[3]),
+                    speedY: parseFloat(ex[4]),
+                    unknown: parseFloat(ex[5]),
+                    waveHeight: parseFloat(ex[6]),
+                },
+                point2: {
+                    x: parseFloat(ex[7]),
+                    y: parseFloat(ex[8]),
+                    z: parseFloat(ex[9]),
+                    speedX: parseFloat(ex[10]),
+                    speedY: parseFloat(ex[11]),
+                    unknown: parseFloat(ex[12]),
+                    waveHeight: parseFloat(ex[13]),
+                },
+                point3: {
+                    x: parseFloat(ex[14]),
+                    y: parseFloat(ex[15]),
+                    z: parseFloat(ex[16]),
+                    speedX: parseFloat(ex[17]),
+                    speedY: parseFloat(ex[18]),
+                    unknown: parseFloat(ex[19]),
+                    waveHeight: parseFloat(ex[20]),
+                },
+                waterType: 0,
+            };
+            if (ex.length > 22) {
+                waterDef.point4 = {
+                    x: parseFloat(ex[21]),
+                    y: parseFloat(ex[22]),
+                    z: parseFloat(ex[23]),
+                    speedX: parseFloat(ex[24]),
+                    speedY: parseFloat(ex[25]),
+                    unknown: parseFloat(ex[26]),
+                    waveHeight: parseFloat(ex[27]),
+                };
+                waterDef.waterType = parseInt(ex[28]);
+            }
+            else {
+                waterDef.waterType = parseInt(ex[21]);
+            }
+            this.waterDefinitions.push(waterDef);
+        }
     }
     parseBinaryIPL(name, data) {
         const parsedIPL = {
@@ -672,6 +733,7 @@ class GameLoader {
             this.loadIDE();
             this.loadIPL();
             this.loadWeather();
+            this.loadWaterDefinitions();
         });
     }
 }

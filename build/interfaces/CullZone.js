@@ -19,5 +19,7 @@ var CullZoneType;
     CullZoneType[CullZoneType["MilitaryZone"] = 4096] = "MilitaryZone";
     CullZoneType[CullZoneType["ExtraAirResistance"] = 16384] = "ExtraAirResistance";
     CullZoneType[CullZoneType["FewerCars"] = 32768] = "FewerCars";
+    // Some unknown zones I've seen
+    CullZoneType[CullZoneType["UNKNOWN2"] = 33792] = "UNKNOWN2";
 })(CullZoneType || (CullZoneType = {}));
 //# sourceMappingURL=CullZone.js.map
