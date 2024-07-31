@@ -32,9 +32,9 @@ class LocalGameLoaderAPI {
             return txd.parsed;
         });
     }
-    getTexture(filepath) {
+    getTexture(txdPath, textureName) {
         return __awaiter(this, void 0, void 0, function* () {
-            const texture = yield this.loader.getTexture(filepath);
+            const texture = yield this.loader.getTexture(txdPath, textureName);
             if (!texture) {
                 return null;
             }

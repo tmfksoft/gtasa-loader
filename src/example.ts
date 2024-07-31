@@ -17,5 +17,7 @@ async function start() {
 	const game = new GameLoader("D:\\Games\\Grand Theft Auto San Andreas (SAMP)");
 	await game.load();
 
+	const texture = await game.API.getTexture("radar64.txd", "radar64");
+	console.log(texture);
 }
 start();

@@ -43,7 +43,7 @@ export default interface GameLoaderAPI {
      * Useful for HTTP transports.
      * @param filepath Path to load TXD
      */
-    getTexture: (filepath: string) => Promise<Blob | null>;
+    getTexture: (txdPath: string, textureName: string) => Promise<Blob | null>;
     /**
      * Loads an IDE Object from the games IDE definitions.
      * @param id ID of Object

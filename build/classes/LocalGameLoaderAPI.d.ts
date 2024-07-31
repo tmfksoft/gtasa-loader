@@ -12,7 +12,7 @@ export default class LocalGameLoaderAPI implements GameLoaderAPI {
     constructor(loader: GameLoader);
     getDFF(filepath: string): Promise<Geometry[] | null>;
     getTXD(filepath: string): Promise<TXDFile | null>;
-    getTexture(filepath: string): Promise<Blob | null>;
+    getTexture(txdPath: string, textureName: string): Promise<Blob | null>;
     getIDEObject(id: number): Promise<IDEObject | IDETimedObject | null>;
     getIPL(): Promise<MainIPL[]>;
     getWeather(): Promise<WeatherDefinition[]>;

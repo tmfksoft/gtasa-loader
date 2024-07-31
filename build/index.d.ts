@@ -69,9 +69,10 @@ declare class GameLoader {
     /**
      * Returns a PNG of the supplied texture path.
      * Null if the texture doesn't exist.
-     * @param filename Path to texture `blah.txd/name` or `models/gta3.img/blah.txd/name` etc
+     * @param txdPath Path to TXD, can be on disk or within an .img
+     * @param textureName Name of texture within the TXD.
      */
-    getTexture(filename: string): Promise<Buffer | null>;
+    getTexture(txdPath: string, textureName: string): Promise<Buffer | null>;
     loadWeather(): void;
     load(): Promise<void>;
 }

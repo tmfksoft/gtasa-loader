@@ -25,6 +25,8 @@ function start() {
         // Change to your game path.
         const game = new _1.default("D:\\Games\\Grand Theft Auto San Andreas (SAMP)");
         yield game.load();
+        const texture = yield game.API.getTexture("radar64.txd", "radar64");
+        console.log(texture);
     });
 }
 start();

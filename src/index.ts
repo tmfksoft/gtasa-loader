@@ -719,19 +719,18 @@ class GameLoader {
 	/**
 	 * Returns a PNG of the supplied texture path.
 	 * Null if the texture doesn't exist.
-	 * @param filename Path to texture `blah.txd/name` or `models/gta3.img/blah.txd/name` etc
+	 * @param txdPath Path to TXD, can be on disk or within an .img
+	 * @param textureName Name of texture within the TXD.
 	 */
-	async getTexture(filename: string): Promise<Buffer | null> {
-		const parsedPath = this.parsePath(filename);
+	async getTexture(txdPath: string, textureName: string): Promise<Buffer | null> {
+		const parsedPath = this.parsePath(txdPath);
 
-		let txdPath = parsedPath.archive;
-		let textureName = parsedPath.file;
+		let txdFilename = parsedPath.archive;
 
 		// Support TXD files within gta3.img
 		if (parsedPath.archive.endsWith(".img")) {
 			const furtherParsed = this.parsePath(parsedPath.file);
-			txdPath = path.join(txdPath, furtherParsed.archive);
-			textureName = furtherParsed.file;
+			txdFilename = path.join(txdPath, furtherParsed.archive);
 		}
 
 		const txd = this.getTXD(txdPath);
