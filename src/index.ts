@@ -14,6 +14,9 @@ import MainIPL from "./interfaces/MainIPL";
 import CullZone from "./interfaces/CullZone";
 import WeatherDefinition from "./interfaces/WeatherDefinition";
 import WaterDefinition from "./interfaces/WaterDefinition";
+import Language from "./interfaces/Language";
+import GameLoaderAPI from "./classes/GameLoaderAPI";
+import LocalGameLoaderAPI from "./classes/LocalGameLoaderAPI";
 
 /**
  * Simple GTA SanAndreas Game Loader
@@ -26,6 +29,9 @@ import WaterDefinition from "./interfaces/WaterDefinition";
  */
 
 class GameLoader {
+
+	// A predfined API you can hook straight up to any project
+	public API: GameLoaderAPI = new LocalGameLoaderAPI(this);
 
 	public gtaData: GTADat = {
 		img: [
@@ -58,8 +64,15 @@ class GameLoader {
 	// filename and its corresponding IMG file.
 	public imgContents: { [key: string]: string } = {};
 
+	public language: Language = "american";
+
 	public constructor(protected gtaPath: string) {
 
+	}
+
+
+	getLanguageString(name: string) {
+		return "";
 	}
 
 	loadGTADat() {
@@ -332,6 +345,10 @@ class GameLoader {
 					}
 
 					parsedIPL.cull.push(cullObj);
+				}
+
+				if (currentSection === "pick") {
+					console.log("pick", line);
 				}
 			}
 		}
