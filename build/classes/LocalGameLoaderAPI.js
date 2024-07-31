@@ -58,7 +58,7 @@ class LocalGameLoaderAPI {
     }
     getWater() {
         return __awaiter(this, void 0, void 0, function* () {
-            return this.getWater();
+            return this.loader.waterDefinitions;
         });
     }
 }
