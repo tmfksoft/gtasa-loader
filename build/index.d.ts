@@ -8,6 +8,8 @@ import ParsedIPL from "./interfaces/ParsedIPL";
 import MainIPL from "./interfaces/MainIPL";
 import WeatherDefinition from "./interfaces/WeatherDefinition";
 import WaterDefinition from "./interfaces/WaterDefinition";
+import Language from "./interfaces/Language";
+import GameLoaderAPI from "./classes/GameLoaderAPI";
 /**
  * Simple GTA SanAndreas Game Loader
  *
@@ -19,6 +21,7 @@ import WaterDefinition from "./interfaces/WaterDefinition";
  */
 declare class GameLoader {
     protected gtaPath: string;
+    API: GameLoaderAPI;
     gtaData: GTADat;
     loadedIPLs: MainIPL[];
     ideObjects: IDEObject[];
@@ -31,7 +34,9 @@ declare class GameLoader {
     imgContents: {
         [key: string]: string;
     };
+    language: Language;
     constructor(gtaPath: string);
+    getLanguageString(name: string): string;
     loadGTADat(): void;
     loadWaterDefinitions(): void;
     parseBinaryIPL(name: string | string[], data: Buffer | Buffer[]): ParsedIPL;

@@ -18,6 +18,7 @@ const img_reader_1 = __importDefault(require("@majesticfudgie/img-reader"));
 const dff_reader_1 = __importDefault(require("@majesticfudgie/dff-reader"));
 const txd_reader_1 = __importDefault(require("@majesticfudgie/txd-reader"));
 const pointer_buffer_1 = __importDefault(require("@majesticfudgie/pointer-buffer"));
+const LocalGameLoaderAPI_1 = __importDefault(require("./classes/LocalGameLoaderAPI"));
 /**
  * Simple GTA SanAndreas Game Loader
  *
@@ -30,6 +31,8 @@ const pointer_buffer_1 = __importDefault(require("@majesticfudgie/pointer-buffer
 class GameLoader {
     constructor(gtaPath) {
         this.gtaPath = gtaPath;
+        // A predfined API you can hook straight up to any project
+        this.API = new LocalGameLoaderAPI_1.default(this);
         this.gtaData = {
             img: [
                 // Preadd some core IMG files
@@ -55,6 +58,10 @@ class GameLoader {
         this.imgReaders = {};
         // filename and its corresponding IMG file.
         this.imgContents = {};
+        this.language = "american";
+    }
+    getLanguageString(name) {
+        return "";
     }
     loadGTADat() {
         const datPath = path_1.default.join(this.gtaPath, "data", "gta.dat");
@@ -295,6 +302,9 @@ class GameLoader {
                         cullObj.unknown3 = parseInt(ex[10]);
                     }
                     parsedIPL.cull.push(cullObj);
+                }
+                if (currentSection === "pick") {
+                    console.log("pick", line);
                 }
             }
         }
