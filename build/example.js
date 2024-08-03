@@ -20,6 +20,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const _1 = __importDefault(require("."));
+const fs_1 = __importDefault(require("fs"));
 function start() {
     return __awaiter(this, void 0, void 0, function* () {
         // Change to your game path.
@@ -27,6 +28,10 @@ function start() {
         yield game.load();
         const texture = yield game.API.getTexture("radar64.txd", "radar64");
         console.log(texture);
+        if (texture) {
+            const buf = Buffer.from(texture);
+            fs_1.default.writeFileSync("test.png", buf);
+        }
     });
 }
 start();

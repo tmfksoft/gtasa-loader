@@ -38,12 +38,13 @@ export default interface GameLoaderAPI {
      */
     getTXD: (filepath: string) => Promise<TXDFile | null>;
     /**
-     * Loads a TXD Texture and returns a PNG Blob
+     * Loads a TXD Texture and returns a Uint8Array containing PNG data
+     * Uint8Array seems to be a little more universally supported..
      * Pass a path to the texture e.g. "models/particle.txd/waterclear256"
      * Useful for HTTP transports.
      * @param filepath Path to load TXD
      */
-    getTexture: (txdPath: string, textureName: string) => Promise<Blob | null>;
+    getTexture: (txdPath: string, textureName: string) => Promise<Uint8Array | null>;
     /**
      * Loads an IDE Object from the games IDE definitions.
      * @param id ID of Object

@@ -25,8 +25,13 @@ enum CullZoneType {
 
 export default interface CullZone {
 	center: { x: number, y: number, z: number }
-	unknown1: number,
-	unknown2: number,
+
+	// Used to 'skew' the box instead of an outright rotation
+	// https://gtamods.com/wiki/Talk:CULL
+	xSkewValue: number,
+	ySkewValue: number,
+
+
 	unknown3?: number,
 
 	length: number, // Dimensions of the zone along y-axis.

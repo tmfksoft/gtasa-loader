@@ -19,5 +19,9 @@ async function start() {
 
 	const texture = await game.API.getTexture("radar64.txd", "radar64");
 	console.log(texture);
+	if (texture) {
+		const buf = Buffer.from(texture);
+		fs.writeFileSync("test.png", buf)
+	}
 }
 start();

@@ -22,8 +22,8 @@ export default interface CullZone {
         y: number;
         z: number;
     };
-    unknown1: number;
-    unknown2: number;
+    xSkewValue: number;
+    ySkewValue: number;
     unknown3?: number;
     length: number;
     width: number;

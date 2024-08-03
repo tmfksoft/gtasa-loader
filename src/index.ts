@@ -322,11 +322,11 @@ class GameLoader {
 							y: parseFloat(ex[1]),
 							z: parseFloat(ex[2]),
 						},
-						unknown1: parseInt(ex[3]),
+						xSkewValue: parseInt(ex[3]),
 						length: parseFloat(ex[4]),
 						bottom: parseFloat(ex[5]),
 						width: parseFloat(ex[6]),
-						unknown2: parseInt(ex[7]),
+						ySkewValue: parseInt(ex[7]),
 						top: parseFloat(ex[8]),
 						type: parseInt(ex[9]), // Also known as 'flag'
 					};

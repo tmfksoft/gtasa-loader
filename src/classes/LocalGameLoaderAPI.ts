@@ -33,13 +33,13 @@ export default class LocalGameLoaderAPI implements GameLoaderAPI {
 		return txd.parsed;
 	}
 
-	async getTexture(txdPath: string, textureName: string): Promise<Blob | null> {
+	async getTexture(txdPath: string, textureName: string): Promise<Uint8Array | null> {
 		const texture = await this.loader.getTexture(txdPath, textureName);
 		if (!texture) {
 			return null;
 		}
 
-		return new Blob([texture], { type: "image/png" });
+		return Uint8Array.from(texture);
 	}
 
 	async getIDEObject(id: number): Promise<IDEObject | IDETimedObject | null> {
