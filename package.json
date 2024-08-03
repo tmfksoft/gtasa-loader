@@ -1,11 +1,12 @@
 {
   "name": "@majesticfudgie/gtasa-loader",
-  "version": "1.0.15",
+  "version": "1.0.16",
   "main": "build/index.js",
   "typings": "build/index.d.ts",
   "scripts": {
     "start": "node .",
-    "build": "tsc"
+    "build": "tsc",
+    "test": "tsc && node build/example.js"
   },
   "license": "MIT",
   "dependencies": {

@@ -7,6 +7,7 @@ import WaterDefinition from "../interfaces/WaterDefinition";
 import IDEObject from "../interfaces/IDEObject";
 import IDETimedObject from "../interfaces/IDETimedObject";
 import TXDFile from "@majesticfudgie/txd-reader/build/interfaces/TXDFile";
+import GXTFile from "../interfaces/language/GXTFile";
 
 
 /**
@@ -80,4 +81,17 @@ export default interface GameLoaderAPI {
 	 * @returns Raw data from water.dat but parsed into objects
 	 */
 	getWater: () => Promise<WaterDefinition[]>,
+
+	/**
+	 * Fetches the language string for the key provided.
+	 * @returns String or null if it doesn't exist
+	 */
+	getLanguageString: (gxtKey: string) => Promise<string | null>,
+
+	/**
+	 * Fetches the entire parsed Language file for a specified language
+	 * @param language 
+	 * @returns Parsed language data, null if it doesn't exist.
+	 */
+	getLanguageData: (language: string) => Promise<GXTFile | null>,
 }

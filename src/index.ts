@@ -17,6 +17,7 @@ import WaterDefinition from "./interfaces/WaterDefinition";
 import Language from "./interfaces/Language";
 import GameLoaderAPI from "./classes/GameLoaderAPI";
 import LocalGameLoaderAPI from "./classes/LocalGameLoaderAPI";
+import LanguageReader from "./classes/LanguageReader";
 
 /**
  * Simple GTA SanAndreas Game Loader
@@ -64,15 +65,12 @@ class GameLoader {
 	// filename and its corresponding IMG file.
 	public imgContents: { [key: string]: string } = {};
 
+	// Defines what language the game will load by default
 	public language: Language = "american";
+	public languageReaders: { [key: string]: LanguageReader } = {};
 
 	public constructor(protected gtaPath: string) {
 
-	}
-
-
-	getLanguageString(name: string) {
-		return "";
 	}
 
 	loadGTADat() {
@@ -857,6 +855,37 @@ class GameLoader {
 		}
 	}
 
+	loadLanguages() {
+		const languages = [
+			"american",
+			"french",
+			"german",
+			"italian",
+			"spanish"
+		];
+		
+		for (let lang of languages) {
+			const gxtPath = path.join(this.gtaPath, "text", `${lang}.gxt`);
+
+			if (!fs.existsSync(gxtPath)) {
+				console.warn(`Unable to find GXT file for ${lang}, it will not be loaded.`);
+				continue;
+			}
+
+			const gxtData = fs.readFileSync(gxtPath);
+			this.languageReaders[lang] = new LanguageReader(gxtData);
+		}
+	}
+
+	// Returns the string, if found otherwise null.
+	readLanguageString(gxtKey: string): string | null {
+		if (typeof this.languageReaders[this.language] === "undefined") {
+			return null;
+		}
+		const reader = this.languageReaders[this.language];
+		return reader.readString(gxtKey);
+	}
+
 	async load() {
 		// Load GTA Data
 		this.loadGTADat();
@@ -867,6 +896,7 @@ class GameLoader {
 		this.loadIPL();
 		this.loadWeather();
 		this.loadWaterDefinitions();
+		this.loadLanguages();
 	}
 }
 export default GameLoader;

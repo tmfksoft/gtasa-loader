@@ -19,18 +19,27 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const _1 = __importDefault(require("."));
 const fs_1 = __importDefault(require("fs"));
+const path_1 = __importDefault(require("path"));
+const LanguageReader_1 = __importDefault(require("./classes/LanguageReader"));
 function start() {
     return __awaiter(this, void 0, void 0, function* () {
-        // Change to your game path.
-        const game = new _1.default("D:\\Games\\Grand Theft Auto San Andreas (SAMP)");
-        yield game.load();
-        const texture = yield game.API.getTexture("radar64.txd", "radar64");
-        console.log(texture);
-        if (texture) {
-            const buf = Buffer.from(texture);
-            fs_1.default.writeFileSync("test.png", buf);
+        //const gtaDir = "D:\\Games\\Grand Theft Auto San Andreas (SAMP)";
+        const gtaDir = "D:\\SteamLibrary\\steamapps\\common\\Grand Theft Auto San Andreas";
+        const languages = [
+            "american",
+            //"french",
+            //"german",
+            //"italian",
+            //"spanish"
+        ];
+        for (let language of languages) {
+            const languageFile = path_1.default.join(gtaDir, "text", language + ".gxt");
+            const languageData = fs_1.default.readFileSync(languageFile);
+            console.log(`Language file ${language}.gxt is ${languageData.length} bytes`);
+            const lang = new LanguageReader_1.default(languageData);
+            console.log(lang.readString("PLA_10"));
+            fs_1.default.writeFileSync(`${language}.json`, JSON.stringify(lang.parsedGXT, null, '\t'));
         }
     });
 }

@@ -57,4 +57,15 @@ export default class LocalGameLoaderAPI implements GameLoaderAPI {
 		return this.loader.waterDefinitions;
 	}
 
+	async getLanguageString(key: string) {
+		return this.loader.readLanguageString(key);
+	}
+
+	async getLanguageData(language: string) {
+		if (typeof this.loader.languageReaders[language] !== "undefined") {
+			return this.loader.languageReaders[language].parsedGXT;
+		}
+		return null;
+	}
+
 }

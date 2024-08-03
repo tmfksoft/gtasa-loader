@@ -10,18 +10,28 @@
 import GameLoader from ".";
 import fs from 'fs';
 import path from 'path';
+import LanguageReader from "./classes/LanguageReader";
 
 async function start() {
-		
-	// Change to your game path.
-	const game = new GameLoader("D:\\Games\\Grand Theft Auto San Andreas (SAMP)");
-	await game.load();
+	
+	//const gtaDir = "D:\\Games\\Grand Theft Auto San Andreas (SAMP)";
+	const gtaDir = "D:\\SteamLibrary\\steamapps\\common\\Grand Theft Auto San Andreas";
 
-	const texture = await game.API.getTexture("radar64.txd", "radar64");
-	console.log(texture);
-	if (texture) {
-		const buf = Buffer.from(texture);
-		fs.writeFileSync("test.png", buf)
+	const languages = [
+		"american",
+		//"french",
+		//"german",
+		//"italian",
+		//"spanish"
+	];
+
+	for (let language of languages) {
+		const languageFile = path.join(gtaDir, "text", language + ".gxt");
+		const languageData = fs.readFileSync(languageFile);
+		console.log(`Language file ${language}.gxt is ${languageData.length} bytes`);
+		const lang = new LanguageReader(languageData);
+		console.log(lang.readString("PLA_10"));
+		fs.writeFileSync(`${language}.json`, JSON.stringify(lang.parsedGXT, null, '\t'));
 	}
 }
 start();
