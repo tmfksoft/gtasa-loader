@@ -1,5 +1,4 @@
 # Here be files!
---
 
 This file is rough documentation of all the files in GTA:SA and what they do.
 Each section below is their relative path within a GTA:SA Folder.
@@ -11,9 +10,9 @@ This is based off a disk copy of GTA:SA v1.00
 *I'm not going to document anything in the main dir as they're obvious*
 
 # /anim
-	- anim.img - Unknown
-	- cuts.img - Unknown
-	- ped.ifp
+ - anim.img - Unknown
+ - cuts.img - Unknown
+ - ped.ifp
 
 # /audio
 *Contains no files, only folders*
@@ -29,6 +28,7 @@ This is based off a disk copy of GTA:SA v1.00
 
 # /audio/SFX
 *As I understand it, all of these files contain the sounds effects in the game, see the CONFIG dir prior for what/where the data lives per sound*
+*I'll probably document each file as I parse data from them, though the names are pretty explanatory*
  - FEET
  - GENRL
  - PAIN_A
@@ -41,6 +41,7 @@ This is based off a disk copy of GTA:SA v1.00
 
 # /audio/streams
 *These files appear to contain longer audio clips such as music and ambience sounds*
+*I'll probably document each file as I parse data from them, though the names are pretty explanatory*
  - AA
  - ADVERTS
  - AMBIENCE
