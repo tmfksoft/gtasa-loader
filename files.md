@@ -12,7 +12,7 @@ This is based off a disk copy of GTA:SA v1.00
 # /anim
  - anim.img - Unknown
  - cuts.img - Unknown
- - ped.ifp
+ - ped.ifp - Defines a bunch of animations, not 100% sure how they're used yet. Name suggests they're for pedestrians.
 
 # /audio
 *Contains no files, only folders*
@@ -243,7 +243,7 @@ This is based off a disk copy of GTA:SA v1.00
 - Logo.mpg - Rockstar Games & Rockstar North title movies
 
 # /ReadMe
- - Readme.txd - It's the basic Readme included from the game.
+ - Readme.txt - It's the basic Readme included from the game.
 
 # /text
 *All files in here follow the same file format*
