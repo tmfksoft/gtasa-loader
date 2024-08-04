@@ -7,6 +7,8 @@ import TXDFile from "@majesticfudgie/txd-reader/build/interfaces/TXDFile";
 import GXTFile from "../interfaces/language/GXTFile";
 import GeometryNode from "@majesticfudgie/dff-reader/build/interfaces/GeometryNode";
 import VehicleDefinition from "../interfaces/vehicles/VehicleDefinition";
+import Color from "../interfaces/Color";
+import VehicleColor from "../interfaces/vehicles/VehicleColor";
 /**
  * This is a base class for providing an API to fetch resources from the game loader
  * without actually running the game loader.
@@ -85,6 +87,25 @@ export default interface GameLoaderAPI {
     /**
      * Returns defined vehicles as per vehicles.ide (or anywhere else!)
      * This doesn't return handling, car colours etc.
+     *
+     * @returns Vehicle definitions
      */
     getVehicles: () => Promise<VehicleDefinition[]>;
+    /**
+     * Fetches all vehicle colours from the palette.
+     * It's an array of "Color's", ignore the alpha value.
+     *
+     * Array indexes match the indexes the game expects.
+     * @returns Array of Colors
+     */
+    getVehicleColorPalette: () => Promise<Color[]>;
+    /**
+     * Returns the permitted colours a vehicle can randomly spawn with.
+     * A color pair may contain 2 colours or 4 depending on the vehicle.
+     *
+     * Colors are indexes referencing the vehicle colour palette.
+     *
+     * @returns Array of permitted vehicle colours
+     */
+    getVehicleColors: () => Promise<VehicleColor[]>;
 }

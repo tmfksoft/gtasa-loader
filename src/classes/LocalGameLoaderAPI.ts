@@ -71,4 +71,11 @@ export default class LocalGameLoaderAPI implements GameLoaderAPI {
 		return this.loader.vehicleDefinitions;
 	}
 
+	async getVehicleColorPalette() {
+		return this.loader.vehicleColorPalette;
+	}
+	async getVehicleColors() {
+		return this.loader.vehicleColors;
+	}
+
 }

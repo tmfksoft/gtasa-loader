@@ -79,6 +79,16 @@ class LocalGameLoaderAPI {
             return this.loader.vehicleDefinitions;
         });
     }
+    getVehicleColorPalette() {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.loader.vehicleColorPalette;
+        });
+    }
+    getVehicleColors() {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.loader.vehicleColors;
+        });
+    }
 }
 exports.default = LocalGameLoaderAPI;
 //# sourceMappingURL=LocalGameLoaderAPI.js.map

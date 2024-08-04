@@ -20,4 +20,6 @@ export default class LocalGameLoaderAPI implements GameLoaderAPI {
     getLanguageString(key: string): Promise<string | null>;
     getLanguageData(language: string): Promise<import("../interfaces/language/GXTFile").default | null>;
     getVehicles(): Promise<import("../interfaces/vehicles/VehicleDefinition").default[]>;
+    getVehicleColorPalette(): Promise<import("../interfaces/Color").default[]>;
+    getVehicleColors(): Promise<import("../interfaces/vehicles/VehicleColor").default[]>;
 }
