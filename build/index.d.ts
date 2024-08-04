@@ -10,6 +10,7 @@ import WeatherDefinition from "./interfaces/WeatherDefinition";
 import WaterDefinition from "./interfaces/WaterDefinition";
 import Language from "./interfaces/Language";
 import GameLoaderAPI from "./classes/GameLoaderAPI";
+import LanguageReader from "./classes/LanguageReader";
 /**
  * Simple GTA SanAndreas Game Loader
  *
@@ -35,8 +36,10 @@ declare class GameLoader {
         [key: string]: string;
     };
     language: Language;
+    languageReaders: {
+        [key: string]: LanguageReader;
+    };
     constructor(gtaPath: string);
-    getLanguageString(name: string): string;
     loadGTADat(): void;
     loadWaterDefinitions(): void;
     parseBinaryIPL(name: string | string[], data: Buffer | Buffer[]): ParsedIPL;
@@ -74,6 +77,8 @@ declare class GameLoader {
      */
     getTexture(txdPath: string, textureName: string): Promise<Buffer | null>;
     loadWeather(): void;
+    loadLanguages(): void;
+    readLanguageString(gxtKey: string): string | null;
     load(): Promise<void>;
 }
 export default GameLoader;

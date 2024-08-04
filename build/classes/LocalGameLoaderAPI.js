@@ -61,6 +61,19 @@ class LocalGameLoaderAPI {
             return this.loader.waterDefinitions;
         });
     }
+    getLanguageString(key) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.loader.readLanguageString(key);
+        });
+    }
+    getLanguageData(language) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (typeof this.loader.languageReaders[language] !== "undefined") {
+                return this.loader.languageReaders[language].parsedGXT;
+            }
+            return null;
+        });
+    }
 }
 exports.default = LocalGameLoaderAPI;
 //# sourceMappingURL=LocalGameLoaderAPI.js.map

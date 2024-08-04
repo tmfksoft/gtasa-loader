@@ -19,6 +19,7 @@ const dff_reader_1 = __importDefault(require("@majesticfudgie/dff-reader"));
 const txd_reader_1 = __importDefault(require("@majesticfudgie/txd-reader"));
 const pointer_buffer_1 = __importDefault(require("@majesticfudgie/pointer-buffer"));
 const LocalGameLoaderAPI_1 = __importDefault(require("./classes/LocalGameLoaderAPI"));
+const LanguageReader_1 = __importDefault(require("./classes/LanguageReader"));
 /**
  * Simple GTA SanAndreas Game Loader
  *
@@ -58,10 +59,9 @@ class GameLoader {
         this.imgReaders = {};
         // filename and its corresponding IMG file.
         this.imgContents = {};
+        // Defines what language the game will load by default
         this.language = "american";
-    }
-    getLanguageString(name) {
-        return "";
+        this.languageReaders = {};
     }
     loadGTADat() {
         const datPath = path_1.default.join(this.gtaPath, "data", "gta.dat");
@@ -733,6 +733,32 @@ class GameLoader {
             this.weatherDefinitions.push(weather);
         }
     }
+    loadLanguages() {
+        const languages = [
+            "american",
+            "french",
+            "german",
+            "italian",
+            "spanish"
+        ];
+        for (let lang of languages) {
+            const gxtPath = path_1.default.join(this.gtaPath, "text", `${lang}.gxt`);
+            if (!fs_1.default.existsSync(gxtPath)) {
+                console.warn(`Unable to find GXT file for ${lang}, it will not be loaded.`);
+                continue;
+            }
+            const gxtData = fs_1.default.readFileSync(gxtPath);
+            this.languageReaders[lang] = new LanguageReader_1.default(gxtData);
+        }
+    }
+    // Returns the string, if found otherwise null.
+    readLanguageString(gxtKey) {
+        if (typeof this.languageReaders[this.language] === "undefined") {
+            return null;
+        }
+        const reader = this.languageReaders[this.language];
+        return reader.readString(gxtKey);
+    }
     load() {
         return __awaiter(this, void 0, void 0, function* () {
             // Load GTA Data
@@ -743,6 +769,7 @@ class GameLoader {
             this.loadIPL();
             this.loadWeather();
             this.loadWaterDefinitions();
+            this.loadLanguages();
         });
     }
 }

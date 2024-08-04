@@ -13,11 +13,13 @@ class LanguageReader {
             version: -1,
             tables: [],
         };
-        this.parse();
+        // Allows creating a reader and not actually filling it with data
+        if (gxtData.length > 0) {
+            this.parse();
+        }
     }
     readString(gxtKey) {
         const crc32 = CRC32_1.default.getKey(gxtKey);
-        console.log("Looking for " + crc32);
         for (let table of this.parsedGXT.tables) {
             for (let subtable of table.subTables) {
                 if (typeof subtable.entries[crc32] !== "undefined") {
@@ -25,7 +27,6 @@ class LanguageReader {
                 }
             }
         }
-        console.log("Couldn't find it");
         return null;
     }
     // Parses the GXT File into memory for future use.
@@ -138,6 +139,15 @@ class LanguageReader {
             gxtFile.tables.push(parsedTable);
         }
         this.parsedGXT = gxtFile;
+    }
+    // In a rare case I'm allowing this class to be loaded/unloaded from JSON
+    toJSON() {
+        return JSON.stringify(this.parsedGXT);
+    }
+    static fromJSON(json) {
+        const reader = new LanguageReader(Buffer.from([]));
+        reader.parsedGXT = JSON.parse(json);
+        return reader;
     }
 }
 exports.default = LanguageReader;

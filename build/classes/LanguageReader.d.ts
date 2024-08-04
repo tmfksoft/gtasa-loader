@@ -5,5 +5,7 @@ declare class LanguageReader {
     constructor(gxtData: Buffer);
     readString(gxtKey: string): string | null;
     parse(): void;
+    toJSON(): string;
+    static fromJSON(json: string): LanguageReader;
 }
 export default LanguageReader;
