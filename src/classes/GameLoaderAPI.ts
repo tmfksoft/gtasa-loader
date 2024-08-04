@@ -8,6 +8,7 @@ import IDEObject from "../interfaces/IDEObject";
 import IDETimedObject from "../interfaces/IDETimedObject";
 import TXDFile from "@majesticfudgie/txd-reader/build/interfaces/TXDFile";
 import GXTFile from "../interfaces/language/GXTFile";
+import GeometryNode from "@majesticfudgie/dff-reader/build/interfaces/GeometryNode";
 
 
 /**
@@ -36,7 +37,7 @@ export default interface GameLoaderAPI {
 	 * @param filepath Path to load DFF
 	 * @returns Parsed DFF Geometry
 	 */
-	getDFF: (filepath: string) => Promise<Geometry[] | null>,
+	getDFF: (filepath: string) => Promise<GeometryNode | null>,
 
 	/**
 	 * Returns a parsed TXD File

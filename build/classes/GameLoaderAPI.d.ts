@@ -1,4 +1,3 @@
-import Geometry from "@majesticfudgie/dff-reader/build/interfaces/Geometry";
 import MainIPL from "../interfaces/MainIPL";
 import WeatherDefinition from "../interfaces/WeatherDefinition";
 import WaterDefinition from "../interfaces/WaterDefinition";
@@ -6,6 +5,7 @@ import IDEObject from "../interfaces/IDEObject";
 import IDETimedObject from "../interfaces/IDETimedObject";
 import TXDFile from "@majesticfudgie/txd-reader/build/interfaces/TXDFile";
 import GXTFile from "../interfaces/language/GXTFile";
+import GeometryNode from "@majesticfudgie/dff-reader/build/interfaces/GeometryNode";
 /**
  * This is a base class for providing an API to fetch resources from the game loader
  * without actually running the game loader.
@@ -31,7 +31,7 @@ export default interface GameLoaderAPI {
      * @param filepath Path to load DFF
      * @returns Parsed DFF Geometry
      */
-    getDFF: (filepath: string) => Promise<Geometry[] | null>;
+    getDFF: (filepath: string) => Promise<GeometryNode | null>;
     /**
      * Returns a parsed TXD File
      * @param filepath  Path to load TXD

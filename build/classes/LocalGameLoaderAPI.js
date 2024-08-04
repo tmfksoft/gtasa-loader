@@ -19,7 +19,7 @@ class LocalGameLoaderAPI {
             if (!dffLoader) {
                 return null;
             }
-            const dff = dffLoader.getGeometry();
+            const dff = dffLoader.getNode();
             return dff;
         });
     }
