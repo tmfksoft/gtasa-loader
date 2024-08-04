@@ -53,7 +53,6 @@ class LanguageReader {
             const blockSize = gxtBuf.readUint32();
             // Main table
             if (tableName !== "TABL") {
-                console.log({ tableIndex });
                 break;
             }
             const subTables = [];

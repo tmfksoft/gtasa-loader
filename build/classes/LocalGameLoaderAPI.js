@@ -74,6 +74,11 @@ class LocalGameLoaderAPI {
             return null;
         });
     }
+    getVehicles() {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.loader.vehicleDefinitions;
+        });
+    }
 }
 exports.default = LocalGameLoaderAPI;
 //# sourceMappingURL=LocalGameLoaderAPI.js.map

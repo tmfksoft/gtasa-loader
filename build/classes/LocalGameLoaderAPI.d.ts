@@ -19,4 +19,5 @@ export default class LocalGameLoaderAPI implements GameLoaderAPI {
     getWater(): Promise<WaterDefinition[]>;
     getLanguageString(key: string): Promise<string | null>;
     getLanguageData(language: string): Promise<import("../interfaces/language/GXTFile").default | null>;
+    getVehicles(): Promise<import("../interfaces/vehicles/VehicleDefinition").default[]>;
 }

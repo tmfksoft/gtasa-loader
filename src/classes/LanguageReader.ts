@@ -68,7 +68,6 @@ class LanguageReader {
 
 			// Main table
 			if (tableName !== "TABL") {
-				console.log({tableIndex})
 				break;
 			}
 

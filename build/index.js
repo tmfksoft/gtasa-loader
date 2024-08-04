@@ -41,7 +41,9 @@ class GameLoader {
                 'MODELS\\GTA_INT.IMG',
                 'MODELS\\PLAYER.IMG'
             ],
-            ide: [],
+            ide: [
+                'DATA\\VEHICLES.IDE'
+            ],
             ipl: [],
             splash: [],
             // Though not defined by the gta.dat file we can manually load some here.
@@ -53,6 +55,11 @@ class GameLoader {
         this.ideObjects = [];
         this.ideTimedObjects = [];
         this.waterDefinitions = [];
+        this.vehicleDefinitions = [];
+        // Vehicle colours, alpha is always 255
+        this.vehicleColorPalette = [];
+        // Colours a vehicle can spawn with
+        this.vehicleColors = [];
         // Misc
         this.weatherDefinitions = [];
         // IMG Files
@@ -368,20 +375,24 @@ class GameLoader {
             const lines = ideData.toString().split('\r\n');
             let currentSection = "";
             for (let line of lines) {
-                if (line === "end") {
-                    currentSection = "";
+                // Skip comments and empty lines.
+                if (line.startsWith("#") || line.trim() === "") {
                     continue;
                 }
-                if (line === "objs") {
-                    currentSection = "objs";
-                    continue;
-                }
-                if (line === "tobj") {
-                    currentSection = "tobj";
-                    continue;
-                }
-                if (line === "anim") {
-                    currentSection = "anim";
+                // Handle sections
+                if (line.trim().split(" ").length === 1) {
+                    if (line === "end") {
+                        if (currentSection == "") {
+                            throw new Error("Unexpected section end in IDE");
+                        }
+                        currentSection = "";
+                    }
+                    else {
+                        if (currentSection !== "") {
+                            throw new Error("Already inside " + currentSection + " section! Line " + lines.indexOf(line));
+                        }
+                        currentSection = line;
+                    }
                     continue;
                 }
                 if (currentSection === "objs") {
@@ -428,6 +439,50 @@ class GameLoader {
                         timeOff: parseInt(ex[3 + objectCount]),
                     });
                 }
+                if (currentSection === "cars") {
+                    const ex = line.split(",").map((l) => l.trim());
+                    const vehId = parseInt(ex[0]);
+                    const modelName = ex[1];
+                    const txdName = ex[2];
+                    const type = ex[3];
+                    const handlingId = ex[4];
+                    const gameName = ex[5];
+                    const anims = (ex[6] === "null" ? null : ex[6]);
+                    const vehicleClass = ex[7];
+                    const frequency = parseInt(ex[8]);
+                    const flags = parseInt(ex[9]);
+                    const comprules = parseInt(ex[10], 16); // They're stored as a hex string...?!
+                    const vehicle = {
+                        id: vehId,
+                        modelName,
+                        txdName,
+                        //@ts-expect-error -- Lazy
+                        type,
+                        handlingId,
+                        gameName,
+                        anims,
+                        vehicleClass,
+                        frequency,
+                        flags,
+                        comprules,
+                    };
+                    // There *should* be extra code here to specific types..
+                    const groundTypes = [
+                        "car", "trailer", "quad", "mtruck", "bmx", "bike"
+                    ];
+                    if (groundTypes.includes(type)) {
+                        const wheelId = parseInt(ex[11]);
+                        const wheelScaleFront = parseFloat(ex[12]);
+                        const wheelScaleRear = parseFloat(ex[13]);
+                        const wheelUpgradeClass = parseInt(ex[14]);
+                        const groundVehicle = vehicle;
+                        groundVehicle.wheelId = wheelId;
+                        groundVehicle.wheelScaleFront = wheelScaleFront;
+                        groundVehicle.wheelScaleRear = wheelScaleRear;
+                        groundVehicle.wheelUpgradeClass = wheelUpgradeClass;
+                    }
+                    this.vehicleDefinitions.push(vehicle);
+                }
             }
         }
         console.log(`Loaded %s IDE Objects`, this.ideObjects.length);
@@ -464,7 +519,6 @@ class GameLoader {
         }
     }
     getAssociatedIMG(filename) {
-        //console.log("Looking for %s", filename);
         for (let fileEntry in this.imgContents) {
             if (fileEntry.toLowerCase() === filename.toLowerCase()) {
                 return this.imgContents[fileEntry];
@@ -759,6 +813,118 @@ class GameLoader {
         const reader = this.languageReaders[this.language];
         return reader.readString(gxtKey);
     }
+    loadCarCols() {
+        const carColsPath = path_1.default.join(this.gtaPath, "data", "carcols.dat");
+        if (!fs_1.default.existsSync(carColsPath)) {
+            throw new Error("Unable to find carcols.dat!");
+        }
+        const carColsData = fs_1.default.readFileSync(carColsPath);
+        const carColsSections = this.parseIDEFormat(carColsData);
+        for (let section of carColsSections) {
+            for (let line of section.lines) {
+                // Trim comments off the end.
+                if (line.indexOf("#") > -1) {
+                    line = line.substring(0, line.indexOf("#"));
+                }
+                const ex = line.trim().split(" ").join("").split(",");
+                if (section.sectionName === "col") {
+                    this.vehicleColorPalette.push({
+                        r: parseInt(ex[0]),
+                        g: parseInt(ex[1]),
+                        b: parseInt(ex[2]),
+                        a: 255,
+                    });
+                }
+                if (section.sectionName === "car") {
+                    const colorPairs = [];
+                    for (let i = 1; i < ex.length; i += 2) {
+                        colorPairs.push({
+                            color1: parseInt(ex[i]),
+                            color2: parseInt(ex[i + 1])
+                        });
+                    }
+                    this.vehicleColors.push({
+                        modelName: ex[0],
+                        colorPairs,
+                    });
+                }
+                if (section.sectionName === "car") {
+                    const colorPairs = [];
+                    for (let i = 1; i < ex.length; i += 4) {
+                        colorPairs.push({
+                            color1: parseInt(ex[i]),
+                            color2: parseInt(ex[i + 1]),
+                            color3: parseInt(ex[i + 2]),
+                            color4: parseInt(ex[i + 3]),
+                        });
+                    }
+                    this.vehicleColors.push({
+                        modelName: ex[0],
+                        colorPairs,
+                    });
+                }
+            }
+        }
+    }
+    /**
+     * Parses an IDE styled formatted file and returns all found sections and their lines.
+     * The expected format is the section name, section contents followed by the keyword "end"
+     *
+     * Comments can begin with // or with #
+     * Blank lines are skipped.
+     * @param data
+     */
+    parseIDEFormat(data) {
+        const lines = data.toString().split('\r\n');
+        const foundSections = [];
+        let currentSection = "";
+        let foundLines = [];
+        for (let line of lines) {
+            line = line.trim();
+            // Skip comments and empty lines.
+            if (line.startsWith("#") || line === "" || line.startsWith("//")) {
+                continue;
+            }
+            // Check if the line is a section name or "end".
+            if (/^[A-Za-z0-9]+$/.test(line)) {
+                // Convert to lower case for case-insensitive comparison
+                const normalizedLine = line.toLowerCase();
+                if (normalizedLine === "end") {
+                    // Check if there's an active section to end
+                    if (currentSection === "") {
+                        console.error("Unexpected 'end' without a section being opened.");
+                        throw new Error("Unexpected section end in IDE Format, Current section: '" + currentSection + "'");
+                    }
+                    // End the current section
+                    foundSections.push({
+                        sectionName: currentSection,
+                        lines: [...foundLines],
+                    });
+                    currentSection = "";
+                    foundLines = [];
+                }
+                else {
+                    // Check if we're already in a section
+                    if (currentSection !== "") {
+                        console.error(`Unexpected line '${line}' while inside section '${currentSection}'.`);
+                        throw new Error("Already inside '" + currentSection + "' section! Line " + lines.indexOf(line));
+                    }
+                    // Start a new section
+                    currentSection = line;
+                }
+                continue;
+            }
+            // If not a section name or "end", it's a content line.
+            if (currentSection !== "") {
+                foundLines.push(line);
+            }
+            else {
+                console.error(`Content line found outside of a section: ${line}`);
+                throw new Error("Content found outside of a section: " + line);
+            }
+        }
+        return foundSections;
+    }
     load() {
         return __awaiter(this, void 0, void 0, function* () {
             // Load GTA Data
@@ -770,6 +936,7 @@ class GameLoader {
             this.loadWeather();
             this.loadWaterDefinitions();
             this.loadLanguages();
+            this.loadCarCols();
         });
     }
 }

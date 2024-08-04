@@ -67,4 +67,8 @@ export default class LocalGameLoaderAPI implements GameLoaderAPI {
 		return null;
 	}
 
+	async getVehicles() {
+		return this.loader.vehicleDefinitions;
+	}
+
 }

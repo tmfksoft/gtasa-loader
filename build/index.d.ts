@@ -11,6 +11,10 @@ import WaterDefinition from "./interfaces/WaterDefinition";
 import Language from "./interfaces/Language";
 import GameLoaderAPI from "./classes/GameLoaderAPI";
 import LanguageReader from "./classes/LanguageReader";
+import VehicleDefinition from "./interfaces/vehicles/VehicleDefinition";
+import IDESection from "./interfaces/IDESection";
+import Color from "./interfaces/Color";
+import VehicleColor from "./interfaces/vehicles/VehicleColor";
 /**
  * Simple GTA SanAndreas Game Loader
  *
@@ -28,6 +32,9 @@ declare class GameLoader {
     ideObjects: IDEObject[];
     ideTimedObjects: IDETimedObject[];
     waterDefinitions: WaterDefinition[];
+    vehicleDefinitions: VehicleDefinition[];
+    vehicleColorPalette: Color[];
+    vehicleColors: VehicleColor[];
     weatherDefinitions: WeatherDefinition[];
     imgReaders: {
         [key: string]: IMGReader;
@@ -79,6 +86,16 @@ declare class GameLoader {
     loadWeather(): void;
     loadLanguages(): void;
     readLanguageString(gxtKey: string): string | null;
+    loadCarCols(): void;
+    /**
+     * Parses an IDE styled formatted file and returns all found sections and their lines.
+     * The expected format is the section name, section contents followed by the keyword "end"
+     *
+     * Comments can begin with // or with #
+     * Blank lines are skipped.
+     * @param data
+     */
+    parseIDEFormat(data: Buffer): IDESection[];
     load(): Promise<void>;
 }
 export default GameLoader;

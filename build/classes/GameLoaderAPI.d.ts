@@ -6,6 +6,7 @@ import IDETimedObject from "../interfaces/IDETimedObject";
 import TXDFile from "@majesticfudgie/txd-reader/build/interfaces/TXDFile";
 import GXTFile from "../interfaces/language/GXTFile";
 import GeometryNode from "@majesticfudgie/dff-reader/build/interfaces/GeometryNode";
+import VehicleDefinition from "../interfaces/vehicles/VehicleDefinition";
 /**
  * This is a base class for providing an API to fetch resources from the game loader
  * without actually running the game loader.
@@ -81,4 +82,9 @@ export default interface GameLoaderAPI {
      * @returns Parsed language data, null if it doesn't exist.
      */
     getLanguageData: (language: string) => Promise<GXTFile | null>;
+    /**
+     * Returns defined vehicles as per vehicles.ide (or anywhere else!)
+     * This doesn't return handling, car colours etc.
+     */
+    getVehicles: () => Promise<VehicleDefinition[]>;
 }
