@@ -2,8 +2,8 @@ import GTADat from "./interfaces/GTADat";
 import path from 'path';
 import fs from 'fs';
 import IPLObject from "./interfaces/IPLObject";
-import IDEObject from "./interfaces/IDEObject";
-import IDETimedObject from "./interfaces/IDETimedObject";
+import IDEObject from "./interfaces/ide/IDEObject";
+import IDETimedObject from "./interfaces/ide/IDETimedObject";
 
 import IMGReader from "@majesticfudgie/img-reader";
 import DFFReader from "@majesticfudgie/dff-reader";
@@ -19,9 +19,10 @@ import GameLoaderAPI from "./classes/GameLoaderAPI";
 import LocalGameLoaderAPI from "./classes/LocalGameLoaderAPI";
 import LanguageReader from "./classes/LanguageReader";
 import VehicleDefinition, { VehicleBaseDefinition, VehicleGroundDefinition } from "./interfaces/vehicles/VehicleDefinition";
-import IDESection from "./interfaces/IDESection";
+import IDESection from "./interfaces/ide/IDESection";
 import Color from "./interfaces/Color";
 import VehicleColor from "./interfaces/vehicles/VehicleColor";
+import IDEAnimatedObject from "./interfaces/ide/IDEAnimatedObject";
 
 /**
  * Simple GTA SanAndreas Game Loader
@@ -60,6 +61,8 @@ class GameLoader {
 	public loadedIPLs: MainIPL[] = [];
 	public ideObjects: IDEObject[] = [];
 	public ideTimedObjects: IDETimedObject[] = [];
+	public ideAnimatedObjects: IDEAnimatedObject[] = [];
+
 	public waterDefinitions: WaterDefinition[] = [];
 	public vehicleDefinitions: VehicleDefinition[] = [];
 
@@ -468,30 +471,55 @@ class GameLoader {
 					continue;
 				}
 
+
 				if (currentSection === "objs") {
+					// Load objects - https://gtamods.com/wiki/OBJS
+					// Theres 4 types
+
+					// Type 1 - 6 Params
+					// Type 2 - 7 Params
+					// Type 3 - 8 Params
+					// Type 4 - 5 Params
+
 					const ex = line.split(",");
 
 					// Object Count is optional and defaults to 1
 					let objectCount = 1;
-					if (ex.length > 7) {
-						objectCount = parseInt(ex[3]);
-					}
+					let drawDistance: number[] = [];
+					let flags: number = -1;
 
-					// This is dependant on Object Count
-					const drawDistance: number[] = [];
-					for (let i=0; i<objectCount; i++) {
-						drawDistance.push(parseFloat(ex[4 + i]));
+					if (ex.length === 6) {
+						// Type 1
+						drawDistance.push( parseFloat(ex[4]) );
+						flags = parseInt(ex[5]);
+					} else if (ex.length === 7) {
+						// Type 2
+						drawDistance.push( parseFloat(ex[4]) );
+						drawDistance.push( parseFloat(ex[5]) );
+						flags = parseInt(ex[6]);
+					} else if (ex.length === 8) {
+						// Type 3
+						drawDistance.push( parseFloat(ex[4]) );
+						drawDistance.push( parseFloat(ex[5]) );
+						drawDistance.push( parseFloat(ex[6]) );
+						flags = parseInt(ex[7]);
+					} else if (ex.length === 5) {
+						drawDistance.push( parseFloat(ex[3]) );
+						flags = parseInt(ex[4]);
 					}
 
 					this.ideObjects.push({
 						id: parseInt(ex[0]),
 						modelName: ex[1].trim(),
 						textureName: ex[2].trim(),
-						objectCount, // 3
-						drawDistance, // 4+
-						flags: parseInt(ex[3 + objectCount]),
+
+						// Variable based on type
+						objectCount, // Type 4 lacks this, but I added it anyway
+						drawDistance,
+						flags,
 					});
 				}
+
 				if (currentSection === "tobj") {
 					const ex = line.split(",");
 
@@ -518,6 +546,20 @@ class GameLoader {
 						timeOff: parseInt(ex[3 + objectCount]),
 					});
 				}
+				if (currentSection === "anim") {
+					const ex = line.split(",");
+
+					this.ideAnimatedObjects.push({
+						id: parseInt(ex[0]),
+						modelName: ex[1].trim(),
+						textureName: ex[2].trim(),
+						animationName: ex[3].trim(),
+						objectCount: 1,
+						drawDistance: [parseFloat(ex[4])],
+						flags: parseInt(ex[5]),
+					});
+				}
+
 				if (currentSection === "cars") {
 					const ex = line.split(",").map((l) => l.trim());
 					
@@ -578,7 +620,7 @@ class GameLoader {
 		console.log(`Loaded %s IDE Timed Objects`, this.ideTimedObjects.length);
 	}
 
-	getObject(id: number): IDEObject | IDETimedObject | null {
+	getObject(id: number): IDEObject | IDETimedObject | IDEAnimatedObject | null {
 		for (let obj of this.ideObjects) {
 			if (id === obj.id) {
 				return obj;
@@ -588,6 +630,12 @@ class GameLoader {
 		for (let tobj of this.ideTimedObjects) {
 			if (id === tobj.id) {
 				return tobj;
+			}
+		}
+
+		for (let anim of this.ideAnimatedObjects) {
+			if (id === anim.id) {
+				return anim;
 			}
 		}
 

@@ -54,6 +54,7 @@ class GameLoader {
         this.loadedIPLs = [];
         this.ideObjects = [];
         this.ideTimedObjects = [];
+        this.ideAnimatedObjects = [];
         this.waterDefinitions = [];
         this.vehicleDefinitions = [];
         // Vehicle colours, alpha is always 255
@@ -396,24 +397,47 @@ class GameLoader {
                     continue;
                 }
                 if (currentSection === "objs") {
+                    // Load objects - https://gtamods.com/wiki/OBJS
+                    // Theres 4 types
+                    // Type 1 - 6 Params
+                    // Type 2 - 7 Params
+                    // Type 3 - 8 Params
+                    // Type 4 - 5 Params
                     const ex = line.split(",");
                     // Object Count is optional and defaults to 1
                     let objectCount = 1;
-                    if (ex.length > 7) {
-                        objectCount = parseInt(ex[3]);
+                    let drawDistance = [];
+                    let flags = -1;
+                    if (ex.length === 6) {
+                        // Type 1
+                        drawDistance.push(parseFloat(ex[4]));
+                        flags = parseInt(ex[5]);
                     }
-                    // This is dependant on Object Count
-                    const drawDistance = [];
-                    for (let i = 0; i < objectCount; i++) {
-                        drawDistance.push(parseFloat(ex[4 + i]));
+                    else if (ex.length === 7) {
+                        // Type 2
+                        drawDistance.push(parseFloat(ex[4]));
+                        drawDistance.push(parseFloat(ex[5]));
+                        flags = parseInt(ex[6]);
+                    }
+                    else if (ex.length === 8) {
+                        // Type 3
+                        drawDistance.push(parseFloat(ex[4]));
+                        drawDistance.push(parseFloat(ex[5]));
+                        drawDistance.push(parseFloat(ex[6]));
+                        flags = parseInt(ex[7]);
+                    }
+                    else if (ex.length === 5) {
+                        drawDistance.push(parseFloat(ex[3]));
+                        flags = parseInt(ex[4]);
                     }
                     this.ideObjects.push({
                         id: parseInt(ex[0]),
                         modelName: ex[1].trim(),
                         textureName: ex[2].trim(),
-                        objectCount, // 3
-                        drawDistance, // 4+
-                        flags: parseInt(ex[3 + objectCount]),
+                        // Variable based on type
+                        objectCount, // Type 4 lacks this, but I added it anyway
+                        drawDistance,
+                        flags,
                     });
                 }
                 if (currentSection === "tobj") {
@@ -437,6 +461,18 @@ class GameLoader {
                         flags: parseInt(ex[3 + objectCount]),
                         timeOn: parseInt(ex[3 + objectCount]),
                         timeOff: parseInt(ex[3 + objectCount]),
+                    });
+                }
+                if (currentSection === "anim") {
+                    const ex = line.split(",");
+                    this.ideAnimatedObjects.push({
+                        id: parseInt(ex[0]),
+                        modelName: ex[1].trim(),
+                        textureName: ex[2].trim(),
+                        animationName: ex[3].trim(),
+                        objectCount: 1,
+                        drawDistance: [parseFloat(ex[4])],
+                        flags: parseInt(ex[5]),
                     });
                 }
                 if (currentSection === "cars") {
@@ -497,6 +533,11 @@ class GameLoader {
         for (let tobj of this.ideTimedObjects) {
             if (id === tobj.id) {
                 return tobj;
+            }
+        }
+        for (let anim of this.ideAnimatedObjects) {
+            if (id === anim.id) {
+                return anim;
             }
         }
         return null;

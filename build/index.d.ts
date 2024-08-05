@@ -1,6 +1,6 @@
 import GTADat from "./interfaces/GTADat";
-import IDEObject from "./interfaces/IDEObject";
-import IDETimedObject from "./interfaces/IDETimedObject";
+import IDEObject from "./interfaces/ide/IDEObject";
+import IDETimedObject from "./interfaces/ide/IDETimedObject";
 import IMGReader from "@majesticfudgie/img-reader";
 import DFFReader from "@majesticfudgie/dff-reader";
 import TXDReader from "@majesticfudgie/txd-reader";
@@ -12,9 +12,10 @@ import Language from "./interfaces/Language";
 import GameLoaderAPI from "./classes/GameLoaderAPI";
 import LanguageReader from "./classes/LanguageReader";
 import VehicleDefinition from "./interfaces/vehicles/VehicleDefinition";
-import IDESection from "./interfaces/IDESection";
+import IDESection from "./interfaces/ide/IDESection";
 import Color from "./interfaces/Color";
 import VehicleColor from "./interfaces/vehicles/VehicleColor";
+import IDEAnimatedObject from "./interfaces/ide/IDEAnimatedObject";
 /**
  * Simple GTA SanAndreas Game Loader
  *
@@ -31,6 +32,7 @@ declare class GameLoader {
     loadedIPLs: MainIPL[];
     ideObjects: IDEObject[];
     ideTimedObjects: IDETimedObject[];
+    ideAnimatedObjects: IDEAnimatedObject[];
     waterDefinitions: WaterDefinition[];
     vehicleDefinitions: VehicleDefinition[];
     vehicleColorPalette: Color[];
@@ -53,7 +55,7 @@ declare class GameLoader {
     parseTextIPL(name: string | string[], data: Buffer | Buffer[]): ParsedIPL;
     loadIPL(): void;
     loadIDE(): void;
-    getObject(id: number): IDEObject | IDETimedObject | null;
+    getObject(id: number): IDEObject | IDETimedObject | IDEAnimatedObject | null;
     loadIMG(): void;
     getAssociatedIMG(filename: string): string | null;
     parsePath(filePath: string): {

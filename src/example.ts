@@ -8,6 +8,7 @@
  */
 
 import GameLoader from ".";
+import IDEFlags from "./interfaces/ide/IDEFlags";
 
 async function start() {
 	
@@ -16,6 +17,19 @@ async function start() {
 	const loader = new GameLoader(gtaDir);
 	await loader.load();
 
-	//console.log(loader.vehicleColors)
+	const obj = loader.getObject(18204);
+	if (obj) {
+
+		const flagNames = Object.values(IDEFlags).filter(value => typeof value === 'number') as number[];
+		console.log(flagNames);
+
+		const validFlags: number[] = [];
+		for (let flag of flagNames) {
+			if (obj.flags & flag) {
+				validFlags.push(flag);
+			}
+		}
+		console.log(validFlags.map(f => f.toString(16)));
+	}
 }
 start();

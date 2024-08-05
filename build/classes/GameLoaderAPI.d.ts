@@ -1,14 +1,15 @@
 import MainIPL from "../interfaces/MainIPL";
 import WeatherDefinition from "../interfaces/WeatherDefinition";
 import WaterDefinition from "../interfaces/WaterDefinition";
-import IDEObject from "../interfaces/IDEObject";
-import IDETimedObject from "../interfaces/IDETimedObject";
+import IDEObject from "../interfaces/ide/IDEObject";
+import IDETimedObject from "../interfaces/ide/IDETimedObject";
 import TXDFile from "@majesticfudgie/txd-reader/build/interfaces/TXDFile";
 import GXTFile from "../interfaces/language/GXTFile";
 import GeometryNode from "@majesticfudgie/dff-reader/build/interfaces/GeometryNode";
 import VehicleDefinition from "../interfaces/vehicles/VehicleDefinition";
 import Color from "../interfaces/Color";
 import VehicleColor from "../interfaces/vehicles/VehicleColor";
+import IDEAnimatedObject from "../interfaces/ide/IDEAnimatedObject";
 /**
  * This is a base class for providing an API to fetch resources from the game loader
  * without actually running the game loader.
@@ -54,7 +55,7 @@ export default interface GameLoaderAPI {
      * @param id ID of Object
      * @returns
      */
-    getIDEObject: (id: number) => Promise<IDEObject | IDETimedObject | null>;
+    getIDEObject: (id: number) => Promise<IDEObject | IDETimedObject | IDEAnimatedObject | null>;
     /**
      * Loads all parsed IPLs
      * Only includes data you'd find in the IPLs.

@@ -1,5 +1,5 @@
-import IDEObject from "../interfaces/IDEObject";
-import IDETimedObject from "../interfaces/IDETimedObject";
+import IDEObject from "../interfaces/ide/IDEObject";
+import IDETimedObject from "../interfaces/ide/IDETimedObject";
 import MainIPL from "../interfaces/MainIPL";
 import WaterDefinition from "../interfaces/WaterDefinition";
 import WeatherDefinition from "../interfaces/WeatherDefinition";
@@ -7,6 +7,7 @@ import GameLoaderAPI from "./GameLoaderAPI";
 import GameLoader from "..";
 import TXDFile from "@majesticfudgie/txd-reader/build/interfaces/TXDFile";
 import GeometryNode from "@majesticfudgie/dff-reader/build/interfaces/GeometryNode";
+import IDEAnimatedObject from "../interfaces/ide/IDEAnimatedObject";
 
 export default class LocalGameLoaderAPI implements GameLoaderAPI {
 
@@ -41,7 +42,7 @@ export default class LocalGameLoaderAPI implements GameLoaderAPI {
 		return Uint8Array.from(texture);
 	}
 
-	async getIDEObject(id: number): Promise<IDEObject | IDETimedObject | null> {
+	async getIDEObject(id: number): Promise<IDEObject | IDETimedObject | IDEAnimatedObject | null> {
 		return this.loader.getObject(id);
 	}
 
