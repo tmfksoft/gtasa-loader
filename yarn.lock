@@ -122,10 +122,10 @@
   resolved "https://registry.yarnpkg.com/@img/sharp-win32-x64/-/sharp-win32-x64-0.33.4.tgz#106f911134035b4157ec92a0c154a6b6f88fa4c1"
   integrity sha512-3QLocdTRVIrFNye5YocZl+KKpYKP+fksi1QhmOArgx7GyhIbQp/WrJRu176jm8IxromS7RIkzMiMINVdBtC8Aw==
 
-"@majesticfudgie/dff-reader@^1.0.4":
-  version "1.0.4"
-  resolved "https://registry.yarnpkg.com/@majesticfudgie/dff-reader/-/dff-reader-1.0.4.tgz#48d7d0772c4cace0585fefd11bee2e55eb616394"
-  integrity sha512-oNRePEkpRcdSXljsGG/mamL6O6MuCoZ5HRrwKw2HRbv8XZ5yNm5nPSeVsDaVxPraTLOp8N7fuBTX+gZi0euKWA==
+"@majesticfudgie/dff-reader@^1.0.6":
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/@majesticfudgie/dff-reader/-/dff-reader-1.0.6.tgz#d6a795dbf9fa2db43035eb6865690e2ce4ad6bf4"
+  integrity sha512-i+I+bCB8PBMZdSPMPyRRSnBM/zgvGTx8fsA9AaF1vio17MhM+jcGAEqbUTJgeiexjeVn7EeJaI/SzBSKV35LXQ==
 
 "@majesticfudgie/img-reader@^1.0.0":
   version "1.0.0"
