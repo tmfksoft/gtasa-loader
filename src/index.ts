@@ -23,6 +23,7 @@ import IDESection from "./interfaces/ide/IDESection";
 import Color from "./interfaces/Color";
 import VehicleColor from "./interfaces/vehicles/VehicleColor";
 import IDEAnimatedObject from "./interfaces/ide/IDEAnimatedObject";
+import IDEFlags from "./interfaces/ide/IDEFlags";
 
 /**
  * Simple GTA SanAndreas Game Loader
@@ -1158,3 +1159,8 @@ class GameLoader {
 	}
 }
 export default GameLoader;
+
+
+export {
+	IDEFlags
+}

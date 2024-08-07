@@ -12,6 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.IDEFlags = void 0;
 const path_1 = __importDefault(require("path"));
 const fs_1 = __importDefault(require("fs"));
 const img_reader_1 = __importDefault(require("@majesticfudgie/img-reader"));
@@ -20,6 +21,8 @@ const txd_reader_1 = __importDefault(require("@majesticfudgie/txd-reader"));
 const pointer_buffer_1 = __importDefault(require("@majesticfudgie/pointer-buffer"));
 const LocalGameLoaderAPI_1 = __importDefault(require("./classes/LocalGameLoaderAPI"));
 const LanguageReader_1 = __importDefault(require("./classes/LanguageReader"));
+const IDEFlags_1 = __importDefault(require("./interfaces/ide/IDEFlags"));
+exports.IDEFlags = IDEFlags_1.default;
 /**
  * Simple GTA SanAndreas Game Loader
  *
