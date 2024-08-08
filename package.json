@@ -1,6 +1,6 @@
 {
   "name": "@majesticfudgie/gtasa-loader",
-  "version": "1.0.25",
+  "version": "1.0.26",
   "main": "build/index.js",
   "typings": "build/index.d.ts",
   "scripts": {
@@ -10,7 +10,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@majesticfudgie/dff-reader": "^1.0.7",
+    "@majesticfudgie/dff-reader": "^1.0.8",
     "@majesticfudgie/img-reader": "^1.0.0",
     "@majesticfudgie/pointer-buffer": "^1.0.1",
     "@majesticfudgie/txd-reader": "^1.0.3"
