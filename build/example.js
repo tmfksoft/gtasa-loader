@@ -39,6 +39,7 @@ function start() {
             }
             console.log(validFlags.map(f => f.toString(16)));
         }
+        console.log(loader.weather);
     });
 }
 start();

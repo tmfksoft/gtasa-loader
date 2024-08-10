@@ -50,9 +50,13 @@ export default class LocalGameLoaderAPI implements GameLoaderAPI {
 		return this.loader.loadedIPLs;
 	}
 	
-	async getWeather(): Promise<WeatherDefinition[]> {
+	async getWeather(): Promise<{ [key: string]: WeatherDefinition[] }> {
+		return this.loader.weather;
+	}
+	async getWeatherDefinitions(): Promise<WeatherDefinition[]> {
 		return this.loader.weatherDefinitions;
 	}
+
 	async getWater(): Promise<WaterDefinition[]> {
 		return this.loader.waterDefinitions;
 	}

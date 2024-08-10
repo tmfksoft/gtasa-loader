@@ -74,12 +74,33 @@ export default interface GameLoaderAPI {
 	getIPL: () => Promise<MainIPL[]>,
 
 	/**
-	 * Gets weather/time definitions from timecyc.dat
-	 * Currently returns the raw data. May split it into a
-	 * weather class to handle interpolation between times and such.
-	 * @returns Array of parsed weather data
+	 * Gets grouped weather definitions.
+	 * Weather definitions are grouped by the names given to them in timecyc.dat
+	 * 
+	 * The times in each array of definitions is as follows:
+	 * 
+	 *  - Midnight
+	 *  - 5am
+	 *  - 6am
+	 *  - 7am
+	 *  - Midday
+	 *  - 7pm
+	 *  - 10pm
+	 * 
+	 * The game interpolates the sky and ambient colours between each time.
+	 * 
+	 * @returns Object containing each other name and its array of weather definitions
 	 */
-	getWeather: () => Promise<WeatherDefinition[]>,
+	getWeather: () => Promise<{ [key:string]: WeatherDefinition[] }>,
+
+	/**
+	 * Gets weather/time definitions from timecyc.dat
+	 * Returns raw individual definitions from timecyc.dat.
+	 * 
+	 * For grouped weather data use getWeather()
+	 * @returns Array of weather definitions
+	 */
+	getWeatherDefinitions: () => Promise<WeatherDefinition[]>,
 
 	/**
 	 * Gets water placement definitions.

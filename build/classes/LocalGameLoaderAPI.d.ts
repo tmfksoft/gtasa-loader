@@ -16,7 +16,10 @@ export default class LocalGameLoaderAPI implements GameLoaderAPI {
     getTexture(txdPath: string, textureName: string): Promise<Uint8Array | null>;
     getIDEObject(id: number): Promise<IDEObject | IDETimedObject | IDEAnimatedObject | null>;
     getIPL(): Promise<MainIPL[]>;
-    getWeather(): Promise<WeatherDefinition[]>;
+    getWeather(): Promise<{
+        [key: string]: WeatherDefinition[];
+    }>;
+    getWeatherDefinitions(): Promise<WeatherDefinition[]>;
     getWater(): Promise<WaterDefinition[]>;
     getLanguageString(key: string): Promise<string | null>;
     getLanguageData(language: string): Promise<import("../interfaces/language/GXTFile").default | null>;

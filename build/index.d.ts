@@ -39,6 +39,9 @@ declare class GameLoader {
     vehicleColorPalette: Color[];
     vehicleColors: VehicleColor[];
     weatherDefinitions: WeatherDefinition[];
+    weather: {
+        [key: string]: WeatherDefinition[];
+    };
     imgReaders: {
         [key: string]: IMGReader;
     };

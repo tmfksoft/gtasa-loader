@@ -53,6 +53,11 @@ class LocalGameLoaderAPI {
     }
     getWeather() {
         return __awaiter(this, void 0, void 0, function* () {
+            return this.loader.weather;
+        });
+    }
+    getWeatherDefinitions() {
+        return __awaiter(this, void 0, void 0, function* () {
             return this.loader.weatherDefinitions;
         });
     }

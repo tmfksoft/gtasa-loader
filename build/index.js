@@ -66,6 +66,7 @@ class GameLoader {
         this.vehicleColors = [];
         // Misc
         this.weatherDefinitions = [];
+        this.weather = {};
         // IMG Files
         this.imgReaders = {};
         // filename and its corresponding IMG file.
@@ -829,6 +830,43 @@ class GameLoader {
                 },
             };
             this.weatherDefinitions.push(weather);
+        }
+        // Build our weathers
+        const weatherNames = [
+            "EXTRASUNNY_LA",
+            "SUNNY_LA",
+            "EXTRASUNNY_SMOG_LA",
+            "SUNNY_SMOG_LA",
+            "CLOUDY_LA",
+            "SUNNY_SF",
+            "EXTRASUNNY_SF",
+            "CLOUDY_SF",
+            "RAINY_SF",
+            "FOGGY_SF",
+            "SUNNY_VEGAS",
+            "EXTRASUNNY_VEGAS",
+            "CLOUDY_VEGAS",
+            "EXTRASUNNY_COUNTRYSIDE",
+            "SUNNY_COUNTRYSIDE",
+            "CLOUDY_COUNTRYSIDE",
+            "RAINY_COUNTRYSIDE",
+            "EXTRASUNNY_DESERT",
+            "SUNNY_DESERT",
+            "SANDSTORM_DESERT",
+            "UNDERWATER",
+            // Extra stuff
+            "EXTRACOLOURS_1",
+            "EXTRACOLOURS_2",
+        ];
+        const timeCount = 8;
+        let offset = 0;
+        for (let name of weatherNames) {
+            const definitions = [];
+            for (let i = 0; i < timeCount; i++) {
+                definitions.push(this.weatherDefinitions[offset]);
+                offset++;
+            }
+            this.weather[name] = definitions;
         }
     }
     loadLanguages() {
