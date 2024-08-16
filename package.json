@@ -1,6 +1,6 @@
 {
   "name": "@majesticfudgie/gtasa-loader",
-  "version": "1.0.31",
+  "version": "1.0.32",
   "main": "build/index.js",
   "typings": "build/index.d.ts",
   "scripts": {
@@ -13,6 +13,7 @@
     "@majesticfudgie/dff-reader": "^1.0.11",
     "@majesticfudgie/img-reader": "^1.0.0",
     "@majesticfudgie/pointer-buffer": "^1.0.1",
+    "@majesticfudgie/sfx-reader": "^1.0.1",
     "@majesticfudgie/txd-reader": "^1.0.3"
   },
   "devDependencies": {

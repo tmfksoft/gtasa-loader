@@ -17,21 +17,6 @@ async function start() {
 	const loader = new GameLoader(gtaDir);
 	await loader.load();
 
-	const obj = loader.getObject(18204);
-	if (obj) {
-
-		const flagNames = Object.values(IDEFlags).filter(value => typeof value === 'number') as number[];
-		console.log(flagNames);
-
-		const validFlags: number[] = [];
-		for (let flag of flagNames) {
-			if (obj.flags & flag) {
-				validFlags.push(flag);
-			}
-		}
-		console.log(validFlags.map(f => f.toString(16)));
-	}
-
-	console.log(loader.weather);
+	
 }
 start();

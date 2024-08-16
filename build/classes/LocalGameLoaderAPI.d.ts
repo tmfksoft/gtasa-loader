@@ -8,6 +8,8 @@ import GameLoader from "..";
 import TXDFile from "@majesticfudgie/txd-reader/build/interfaces/TXDFile";
 import GeometryNode from "@majesticfudgie/dff-reader/build/interfaces/GeometryNode";
 import IDEAnimatedObject from "../interfaces/ide/IDEAnimatedObject";
+import AudioStream from "@majesticfudgie/sfx-reader/build/interfaces/AudioStream";
+import SoundEffect from "@majesticfudgie/sfx-reader/build/interfaces/SoundEffect";
 export default class LocalGameLoaderAPI implements GameLoaderAPI {
     protected loader: GameLoader;
     constructor(loader: GameLoader);
@@ -26,4 +28,10 @@ export default class LocalGameLoaderAPI implements GameLoaderAPI {
     getVehicles(): Promise<import("../interfaces/vehicles/VehicleDefinition").default[]>;
     getVehicleColorPalette(): Promise<import("../interfaces/Color").default[]>;
     getVehicleColors(): Promise<import("../interfaces/vehicles/VehicleColor").default[]>;
+    getVehicleHandling(): Promise<import("../interfaces/vehicles/handling/VehicleHandlingDefinitions").default>;
+    getStreamTrack(streamName: string, trackId: number): Promise<import("@majesticfudgie/sfx-reader/build/interfaces/sfx/StreamTrack").default>;
+    getAudioStream(streamName: string): Promise<AudioStream>;
+    getSoundEffect(packageName: string, bankIndex: number, slotIndex: number): Promise<SoundEffect>;
+    toWAV(effect: SoundEffect): Promise<Uint8Array>;
+    on(eventName: string | symbol, listener: (...args: any[]) => void): GameLoader;
 }

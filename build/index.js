@@ -23,6 +23,8 @@ const LocalGameLoaderAPI_1 = __importDefault(require("./classes/LocalGameLoaderA
 const LanguageReader_1 = __importDefault(require("./classes/LanguageReader"));
 const IDEFlags_1 = __importDefault(require("./interfaces/ide/IDEFlags"));
 exports.IDEFlags = IDEFlags_1.default;
+const events_1 = __importDefault(require("events"));
+const sfx_reader_1 = __importDefault(require("@majesticfudgie/sfx-reader"));
 /**
  * Simple GTA SanAndreas Game Loader
  *
@@ -31,12 +33,17 @@ exports.IDEFlags = IDEFlags_1.default;
  *
  * Currently you can fetch DFF and TXD files which returns the DFF and TXD Readers.
  * This allows reading and converting models and textures on the fly.
+ *
+ * A recent addition is the GameLoader is now an event emitter.
+ * The loader will emit loading events and progress as it loads.
  */
-class GameLoader {
+class GameLoader extends events_1.default {
     constructor(gtaPath) {
+        super();
         this.gtaPath = gtaPath;
         // A predfined API you can hook straight up to any project
         this.API = new LocalGameLoaderAPI_1.default(this);
+        this.loadingStages = 10; // This will change
         this.gtaData = {
             img: [
                 // Preadd some core IMG files
@@ -74,6 +81,15 @@ class GameLoader {
         // Defines what language the game will load by default
         this.language = "american";
         this.languageReaders = {};
+        // Vehicles
+        this.vehicleHandling = {
+            cars: [],
+            bikes: [],
+            boats: [],
+            flying: [],
+            anim: [],
+        };
+        this.sfx = new sfx_reader_1.default(gtaPath);
     }
     loadGTADat() {
         const datPath = path_1.default.join(this.gtaPath, "data", "gta.dat");
@@ -887,6 +903,107 @@ class GameLoader {
             this.languageReaders[lang] = new LanguageReader_1.default(gxtData);
         }
     }
+    loadVehicleHandling() {
+        // Very much a heavy work in progress.
+        const handlingPath = path_1.default.join(this.gtaPath, "data", "handling.cfg");
+        if (!fs_1.default.existsSync(handlingPath)) {
+            throw new Error("Missing handling.cfg");
+        }
+        const handlingData = fs_1.default.readFileSync(handlingPath);
+        const lines = handlingData.toString().split("\r\n");
+        const cars = [];
+        const boats = [];
+        const bikes = [];
+        const flying = [];
+        const anim = [];
+        for (let line of lines) {
+            // Skip empty lines
+            if (line.trim() === "") {
+                continue;
+            }
+            // Skip comments, WHY ;!?!
+            if (line.startsWith(";")) {
+                continue;
+            }
+            // Store what type of vehicle we're dealing with.
+            let type = "car";
+            if (line.startsWith("%")) {
+                type = "boat";
+            }
+            else if (line.startsWith("!")) {
+                type = "bike";
+            }
+            else if (line.startsWith("$")) {
+                type = "flying"; // Covers Planes & Helicopters
+            }
+            else if (line.startsWith("^")) {
+                type = "anim"; // 
+            }
+            if (type !== "car") {
+                // Trim that first character off.
+                line = line.substring(1);
+            }
+            // Get rid of spaces and tabs and split the line by 'gaps'
+            const ex = line.split("\t").join(" ").split(" ").filter(c => c.trim() !== "");
+            if (type === "car" || type === "bike" || type === "flying") {
+                // Handle car definition
+                const veh = {
+                    id: ex[0],
+                    mass: parseFloat(ex[1]),
+                    turnMass: parseFloat(ex[2]),
+                    dragMult: parseFloat(ex[3]),
+                    centreOfMass: {
+                        x: parseFloat(ex[4]),
+                        y: parseFloat(ex[5]),
+                        z: parseFloat(ex[6]),
+                    },
+                    percentSubmerged: parseFloat(ex[7]),
+                    tractionMultiplier: parseFloat(ex[8]),
+                    tractionLoss: parseFloat(ex[9]),
+                    tractionBias: parseFloat(ex[10]),
+                    transmissionData: {
+                        numberOfGears: parseInt(ex[11]),
+                        maxVelocity: parseFloat(ex[12]),
+                        engineAcceleration: parseFloat(ex[13]),
+                        engineInertia: parseFloat(ex[14]),
+                        driveType: ex[15],
+                        engineType: ex[16],
+                    },
+                    brakeDeceleration: parseFloat(ex[17]),
+                    brakeBias: parseFloat(ex[18]),
+                    abs: (ex[19] === "0" ? false : true),
+                    steeringLock: (ex[20] === "0" ? false : true),
+                    suspensionForceLevel: ex[21],
+                    suspensionDampingLevel: ex[22],
+                    suspensionHighSpdComDamp: parseFloat(ex[23]),
+                    suspensionUpperLimit: parseFloat(ex[24]),
+                    suspensionLowerLimit: parseFloat(ex[25]),
+                    suspensionBiasFront: parseFloat(ex[26]),
+                    suspensionAntiDiveMultiplier: parseFloat(ex[27]),
+                    seatOffsetDistance: parseFloat(ex[28]),
+                    collisionDamageMultiplier: parseFloat(ex[29]),
+                    monetaryValue: parseFloat(ex[30]),
+                    modelFlags: parseInt(ex[31], 16),
+                    handlingFlags: parseInt(ex[32], 16),
+                    frontLights: parseInt(ex[33]),
+                    rearLights: parseInt(ex[34]),
+                    animGroup: parseInt(ex[35]),
+                };
+                if (type === "car") {
+                    cars.push(veh);
+                }
+                else if (type === "bike") {
+                    bikes.push(veh);
+                }
+                else if (type === "flying") {
+                    flying.push(veh);
+                }
+            }
+        }
+        this.vehicleHandling.cars.push(...cars);
+        this.vehicleHandling.bikes.push(...bikes);
+        this.vehicleHandling.flying.push(...flying);
+    }
     // Returns the string, if found otherwise null.
     readLanguageString(gxtKey) {
         if (typeof this.languageReaders[this.language] === "undefined") {
@@ -1009,16 +1126,33 @@ class GameLoader {
     }
     load() {
         return __awaiter(this, void 0, void 0, function* () {
+            // The load order should probably be changed
+            // Allowing a SA loading screen and music similar to the game
+            // For the memes of course and it doesn't require bundling copyrighted material!
+            this.emit("loading", { stage: 0 }); // About to start loading
             // Load GTA Data
             this.loadGTADat();
+            this.emit("loading", { stage: 1 }); // Loaded GTA.DAT
             // Load in resources as needed.
             this.loadIMG();
+            this.emit("loading", { stage: 2 }); // Loaded IMG Data
             this.loadIDE();
+            this.emit("loading", { stage: 3 }); // Loaded IDE Files
             this.loadIPL();
+            this.emit("loading", { stage: 4 }); // Loaded IPL Files
             this.loadWeather();
+            this.emit("loading", { stage: 5 }); // Loaded Weather Data
             this.loadWaterDefinitions();
+            this.emit("loading", { stage: 6 }); // Loaded Water Data
             this.loadLanguages();
+            this.emit("loading", { stage: 7 }); // Loaded Language Data
             this.loadCarCols();
+            this.emit("loading", { stage: 8 }); // Loaded Car Colour Data
+            this.loadVehicleHandling();
+            this.emit("loading", { stage: 9 }); // Loaded Vehicle Handling Data
+            yield this.sfx.load();
+            this.emit("loading", { stage: 10 }); // Loaded sound effects
+            // When Loading Stage is equal to the amount of loading stages the loader is finished.
         });
     }
 }

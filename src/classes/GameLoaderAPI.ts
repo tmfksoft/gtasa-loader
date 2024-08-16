@@ -13,6 +13,11 @@ import VehicleDefinition from "../interfaces/vehicles/VehicleDefinition";
 import Color from "../interfaces/Color";
 import VehicleColor from "../interfaces/vehicles/VehicleColor";
 import IDEAnimatedObject from "../interfaces/ide/IDEAnimatedObject";
+import GameLoader from "..";
+import VehicleHandlingDefinitions from "../interfaces/vehicles/handling/VehicleHandlingDefinitions";
+import StreamTrack from "@majesticfudgie/sfx-reader/build/interfaces/sfx/StreamTrack";
+import AudioStream from "@majesticfudgie/sfx-reader/build/interfaces/AudioStream";
+import SoundEffect from "@majesticfudgie/sfx-reader/build/interfaces/SoundEffect";
 
 
 /**
@@ -147,4 +152,89 @@ export default interface GameLoaderAPI {
 	 * @returns Array of permitted vehicle colours
 	 */
 	getVehicleColors: () => Promise<VehicleColor[]>,
+
+	/**
+	 * Returns all loaded vehicle handling data from "handling.cfg"
+	 * Data is returned in a minimally parsed form.
+	 * 
+	 * Model and Handling flags are *not* parsed, they're returned in a numeric
+	 * form, convert them to base 16 and parse yourself using handling.cfg for reference.
+	 * 
+	 * I may handle parsing them in future.
+	 * 
+	 * @returns Vehicle Handling Data
+	 */
+	getVehicleHandling: () => Promise<VehicleHandlingDefinitions>,
+
+	/**
+	 * Retrieves a specific track from the audio stream file supplied.
+	 * You could call getAudioStream and fetch the track or use this method
+	 * as a convenience method, it handles sanity checking the track id.
+	 * 
+	 * Track ID's start at 1, just to conform to how everyone refers to the tracks.
+	 * 
+	 * It's advised you try not to keep this data in memory any longer than you need to.
+	 * Purely for the sake of memory usage.
+	 * 
+	 * @param streamName Audio stream file e.g. AMBIENCE
+	 * @param trackId Track ID (1 is first)
+	 * @returns Parsed StreamTrack with audio data and beats
+	 */
+	getStreamTrack: (streamName: string, trackId: number) => Promise<StreamTrack>,
+
+	/**
+	 * Reads and parses and audio stream file from disk,
+	 * returning contained tracks with any associated beat information.
+	 * 
+	 * It's advised you try not to keep this data in memory any longer than you need to.
+	 * Purely for the sake of memory usage.
+	 * 
+	 * @param streamName File to open e.g. AMBIENCE
+	 * @returns AudioStream with associated tracks
+	 */
+	getAudioStream: (streamName: string) => Promise<AudioStream>,
+
+	/**
+	 * Retrieves a specific sound effect.
+	 * Using the supplied package name, bank index and slot index a Buffer
+	 * containing PCM data is returned.
+	 * 
+	 * Indexes start at 1 rather than 0 to line up with documentation
+	 * and how the community refers to them.
+	 * 
+	 * Package name may need replacing with package index at some point..
+	 * 
+	 * @param packageName One of FEET, GENRL, PAIN_A, SCRIPT, SPC_EA, SPC_FA, SPC_GA, SPC_NA, SPC_PA
+	 * @param bankIndex Bank Index - Starts at 1
+	 * @param slotIndex Slot Index - Starts at 1
+	 */
+	getSoundEffect: (packageName: string, bankIndex: number, slotIndex: number) => Promise<SoundEffect>;
+
+	/**
+	 * Converts a sound effect's RAW PCM
+	 * into a WAV File by appending an appropriate
+	 * WAV file header
+	 * 
+	 * @param effect Sound Effect
+	 * @returns WAV File
+	 */
+	toWAV: (effect: SoundEffect) => Promise<Uint8Array>
+
+	/**
+	 * Adds an event listener.
+	 * It's up to the API implementation to handle this,
+	 * may it be web sockets, web events, IPC events or just straight pass through.
+	 * @param eventName 
+	 * @param listener 
+	 */
+	on(eventName: string | symbol, listener: ( ...args: any[] ) => void): GameLoader;
+	on(eventName: "loading", listener: ( data: { stage: number } ) => void): GameLoader;
+
+	/**
+	 * Removes an event listener.
+	 * It's up to the API implementation to handle this.
+	 * @param eventName 
+	 * @param listener 
+	 */
+	on(eventName: string | symbol, listener: ( ...args: any[] ) => void): GameLoader;
 }

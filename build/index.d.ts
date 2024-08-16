@@ -17,6 +17,9 @@ import Color from "./interfaces/Color";
 import VehicleColor from "./interfaces/vehicles/VehicleColor";
 import IDEAnimatedObject from "./interfaces/ide/IDEAnimatedObject";
 import IDEFlags from "./interfaces/ide/IDEFlags";
+import VehicleHandlingDefinitions from "./interfaces/vehicles/handling/VehicleHandlingDefinitions";
+import EventEmitter from "events";
+import SFXReader from "@majesticfudgie/sfx-reader";
 /**
  * Simple GTA SanAndreas Game Loader
  *
@@ -25,10 +28,14 @@ import IDEFlags from "./interfaces/ide/IDEFlags";
  *
  * Currently you can fetch DFF and TXD files which returns the DFF and TXD Readers.
  * This allows reading and converting models and textures on the fly.
+ *
+ * A recent addition is the GameLoader is now an event emitter.
+ * The loader will emit loading events and progress as it loads.
  */
-declare class GameLoader {
+declare class GameLoader extends EventEmitter {
     protected gtaPath: string;
     API: GameLoaderAPI;
+    loadingStages: number;
     gtaData: GTADat;
     loadedIPLs: MainIPL[];
     ideObjects: IDEObject[];
@@ -52,6 +59,8 @@ declare class GameLoader {
     languageReaders: {
         [key: string]: LanguageReader;
     };
+    vehicleHandling: VehicleHandlingDefinitions;
+    sfx: SFXReader;
     constructor(gtaPath: string);
     loadGTADat(): void;
     loadWaterDefinitions(): void;
@@ -91,6 +100,7 @@ declare class GameLoader {
     getTexture(txdPath: string, textureName: string): Promise<Buffer | null>;
     loadWeather(): void;
     loadLanguages(): void;
+    loadVehicleHandling(): void;
     readLanguageString(gxtKey: string): string | null;
     loadCarCols(): void;
     /**

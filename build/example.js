@@ -20,26 +20,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const _1 = __importDefault(require("."));
-const IDEFlags_1 = __importDefault(require("./interfaces/ide/IDEFlags"));
 function start() {
     return __awaiter(this, void 0, void 0, function* () {
         //const gtaDir = "D:\\Games\\Grand Theft Auto San Andreas (SAMP)";
         const gtaDir = "D:\\SteamLibrary\\steamapps\\common\\Grand Theft Auto San Andreas";
         const loader = new _1.default(gtaDir);
         yield loader.load();
-        const obj = loader.getObject(18204);
-        if (obj) {
-            const flagNames = Object.values(IDEFlags_1.default).filter(value => typeof value === 'number');
-            console.log(flagNames);
-            const validFlags = [];
-            for (let flag of flagNames) {
-                if (obj.flags & flag) {
-                    validFlags.push(flag);
-                }
-            }
-            console.log(validFlags.map(f => f.toString(16)));
-        }
-        console.log(loader.weather);
     });
 }
 start();

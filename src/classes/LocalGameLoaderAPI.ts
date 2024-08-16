@@ -8,12 +8,12 @@ import GameLoader from "..";
 import TXDFile from "@majesticfudgie/txd-reader/build/interfaces/TXDFile";
 import GeometryNode from "@majesticfudgie/dff-reader/build/interfaces/GeometryNode";
 import IDEAnimatedObject from "../interfaces/ide/IDEAnimatedObject";
+import AudioStream from "@majesticfudgie/sfx-reader/build/interfaces/AudioStream";
+import SoundEffect from "@majesticfudgie/sfx-reader/build/interfaces/SoundEffect";
 
-export default class LocalGameLoaderAPI implements GameLoaderAPI {
+export default class LocalGameLoaderAPI implements GameLoaderAPI  {
 
-	constructor(protected loader: GameLoader) {
-
-	}
+	constructor(protected loader: GameLoader) {}
 
 	async getDFF(filepath: string):Promise<GeometryNode | null> {
 		const dffLoader = this.loader.getDFF(filepath);
@@ -81,6 +81,30 @@ export default class LocalGameLoaderAPI implements GameLoaderAPI {
 	}
 	async getVehicleColors() {
 		return this.loader.vehicleColors;
+	}
+	async getVehicleHandling() {
+		return this.loader.vehicleHandling;
+	}
+
+	// Let there be sound!
+	async getStreamTrack(streamName: string, trackId: number) {
+		return this.loader.sfx.getStreamTrack(streamName, trackId);
+	}
+	async getAudioStream(streamName: string) {
+		return this.loader.sfx.getAudioStream(streamName);
+	}
+	async getSoundEffect(packageName: string, bankIndex: number, slotIndex: number) {
+		return this.loader.sfx.getSoundEffect(packageName, bankIndex, slotIndex);
+	}
+	async toWAV(effect: SoundEffect) {
+		// We're converting to a Uint8Array as browsers lack Buffer
+		// I should probably think about a browser ready/safe solution.
+		const wavBuf = this.loader.sfx.toWAV(effect);
+		return Uint8Array.from(wavBuf);
+	}
+
+	on(eventName: string | symbol, listener: ( ...args: any[] ) => void) {
+		return this.loader.on(eventName, listener);
 	}
 
 }

@@ -94,6 +94,38 @@ class LocalGameLoaderAPI {
             return this.loader.vehicleColors;
         });
     }
+    getVehicleHandling() {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.loader.vehicleHandling;
+        });
+    }
+    // Let there be sound!
+    getStreamTrack(streamName, trackId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.loader.sfx.getStreamTrack(streamName, trackId);
+        });
+    }
+    getAudioStream(streamName) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.loader.sfx.getAudioStream(streamName);
+        });
+    }
+    getSoundEffect(packageName, bankIndex, slotIndex) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.loader.sfx.getSoundEffect(packageName, bankIndex, slotIndex);
+        });
+    }
+    toWAV(effect) {
+        return __awaiter(this, void 0, void 0, function* () {
+            // We're converting to a Uint8Array as browsers lack Buffer
+            // I should probably think about a browser ready/safe solution.
+            const wavBuf = this.loader.sfx.toWAV(effect);
+            return Uint8Array.from(wavBuf);
+        });
+    }
+    on(eventName, listener) {
+        return this.loader.on(eventName, listener);
+    }
 }
 exports.default = LocalGameLoaderAPI;
 //# sourceMappingURL=LocalGameLoaderAPI.js.map
