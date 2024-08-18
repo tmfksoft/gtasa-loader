@@ -10,7 +10,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@majesticfudgie/dff-reader": "^1.0.11",
+    "@majesticfudgie/dff-reader": "^1.0.12",
     "@majesticfudgie/img-reader": "^1.0.0",
     "@majesticfudgie/pointer-buffer": "^1.0.1",
     "@majesticfudgie/sfx-reader": "^1.0.1",
