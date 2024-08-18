@@ -1,7 +1,7 @@
 
 
 import Geometry from "@majesticfudgie/dff-reader/build/interfaces/Geometry";
-import MainIPL from "../interfaces/MainIPL";
+import MainIPL from "../interfaces/ipl/MainIPL";
 import WeatherDefinition from "../interfaces/WeatherDefinition";
 import WaterDefinition from "../interfaces/WaterDefinition";
 import IDEObject from "../interfaces/ide/IDEObject";

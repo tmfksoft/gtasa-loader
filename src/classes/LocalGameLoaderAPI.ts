@@ -1,6 +1,6 @@
 import IDEObject from "../interfaces/ide/IDEObject";
 import IDETimedObject from "../interfaces/ide/IDETimedObject";
-import MainIPL from "../interfaces/MainIPL";
+import MainIPL from "../interfaces/ipl/MainIPL";
 import WaterDefinition from "../interfaces/WaterDefinition";
 import WeatherDefinition from "../interfaces/WeatherDefinition";
 import GameLoaderAPI from "./GameLoaderAPI";

@@ -9,6 +9,8 @@
 
 import GameLoader from ".";
 import IDEFlags from "./interfaces/ide/IDEFlags";
+import AudioZone from "./interfaces/ipl/AudioZone";
+import EnexMarker from "./interfaces/ipl/EnexMarker";
 
 async function start() {
 	
@@ -17,6 +19,12 @@ async function start() {
 	const loader = new GameLoader(gtaDir);
 	await loader.load();
 
-	
+	const enex: EnexMarker[] = [];
+	for (let ipl of loader.loadedIPLs) {
+		enex.push(...ipl.enexMarkers);
+	}
+	console.log({
+	//	enex
+	})
 }
 start();

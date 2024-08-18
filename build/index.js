@@ -190,6 +190,14 @@ class GameLoader extends events_1.default {
             name,
             inst: [],
             cull: [],
+            tcyc: [],
+            grge: [],
+            auzo: [],
+            occl: [],
+            path: [],
+            enex: [],
+            zone: [],
+            pick: [],
         };
         const bufList = [];
         if (!Array.isArray(data)) {
@@ -251,6 +259,15 @@ class GameLoader extends events_1.default {
             name,
             inst: [],
             cull: [],
+            auzo: [],
+            tcyc: [],
+            grge: [],
+            occl: [],
+            enex: [],
+            zone: [],
+            pick: [],
+            // To be implemented
+            path: [],
         };
         const iplBuf = [];
         if (Array.isArray(data)) {
@@ -278,6 +295,9 @@ class GameLoader extends events_1.default {
                     }
                     continue;
                 }
+                if (currentSection === "") {
+                    continue;
+                }
                 if (currentSection === "inst") {
                     const ex = line.split(",");
                     const iplObject = {
@@ -300,7 +320,7 @@ class GameLoader extends events_1.default {
                     };
                     parsedIPL.inst.push(iplObject);
                 }
-                if (currentSection === "cull") {
+                else if (currentSection === "cull") {
                     const ex = line.split(",");
                     const cullObj = {
                         center: {
@@ -331,8 +351,169 @@ class GameLoader extends events_1.default {
                     }
                     parsedIPL.cull.push(cullObj);
                 }
-                if (currentSection === "pick") {
-                    console.log("pick", line);
+                else if (currentSection === "auzo") {
+                    const ex = line.split(",");
+                    if (ex.length > 6) {
+                        // Cube
+                        parsedIPL.auzo.push({
+                            name: ex[0],
+                            id: parseInt(ex[1]),
+                            switch: parseInt(ex[2]),
+                            position1: {
+                                x: parseFloat(ex[3]),
+                                y: parseFloat(ex[4]),
+                                z: parseFloat(ex[5]),
+                            },
+                            position2: {
+                                x: parseFloat(ex[6]),
+                                y: parseFloat(ex[7]),
+                                z: parseFloat(ex[8]),
+                            },
+                        });
+                    }
+                    else {
+                        // Sphere
+                        parsedIPL.auzo.push({
+                            name: ex[0],
+                            id: parseInt(ex[1]),
+                            switch: parseInt(ex[2]),
+                            position: {
+                                x: parseFloat(ex[3]),
+                                y: parseFloat(ex[4]),
+                                z: parseFloat(ex[5]),
+                            },
+                            radius: parseFloat(ex[6]),
+                        });
+                    }
+                }
+                else if (currentSection === "path") {
+                    // Left over from VC?
+                }
+                else if (currentSection === "occl") {
+                    // Occlusion Zones
+                    const ex = line.split(",");
+                    parsedIPL.occl.push({
+                        middleX: parseFloat(ex[0]),
+                        middleY: parseFloat(ex[1]),
+                        bottomZ: parseFloat(ex[2]),
+                        widthX: parseFloat(ex[3]),
+                        widthY: parseFloat(ex[4]),
+                        height: parseFloat(ex[5]),
+                        rotation: parseFloat(ex[6]),
+                    });
+                }
+                else if (currentSection === "tcyc") {
+                    // TimeCycle Override Zone
+                    const ex = line.split(",");
+                    parsedIPL.tcyc.push({
+                        position1: {
+                            x: parseFloat(ex[0]),
+                            y: parseFloat(ex[1]),
+                            z: parseFloat(ex[2]),
+                        },
+                        position2: {
+                            x: parseFloat(ex[3]),
+                            y: parseFloat(ex[4]),
+                            z: parseFloat(ex[5]),
+                        },
+                        farClip: parseInt(ex[6]),
+                        extraColor: parseInt(ex[7]),
+                        extraColorIntensity: parseFloat(ex[8]),
+                        // Appaarently these are optional, the vanilla game *always* specifies them though.
+                        // I may have to come back to fix this if any mods don't specify them.
+                        fallOffDist: parseFloat(ex[9]),
+                        // Unused ex[10]
+                        lodDistMultiplier: parseFloat(ex[11]),
+                    });
+                }
+                else if (currentSection === "enex") {
+                    const ex = line.split(",");
+                    // Clean the name up
+                    let name = ex[13].trim();
+                    // Strip quotes
+                    name = name.substring(1, name.length - 1);
+                    parsedIPL.enex.push({
+                        entrancePosition: {
+                            x: parseFloat(ex[0]),
+                            y: parseFloat(ex[1]),
+                            z: parseFloat(ex[2]),
+                        },
+                        enterAngle: parseFloat(ex[3]),
+                        entrySize: {
+                            x: parseFloat(ex[4]),
+                            y: parseFloat(ex[5]),
+                            z: parseFloat(ex[6]),
+                        },
+                        exitPosition: {
+                            x: parseFloat(ex[7]),
+                            y: parseFloat(ex[8]),
+                            z: parseFloat(ex[9]),
+                        },
+                        exitAngle: parseFloat(ex[10]),
+                        targetInterior: parseInt(ex[11]),
+                        flags: parseInt(ex[12]),
+                        name,
+                        sky: parseInt(ex[14]),
+                        numPedsToSpawn: parseInt(ex[15]),
+                        timeOn: parseInt(ex[16]),
+                        timeOff: parseInt(ex[17]),
+                    });
+                }
+                else if (currentSection === "grge") {
+                    // Garages
+                    const ex = line.split(",");
+                    parsedIPL.grge.push({
+                        position: {
+                            x: parseFloat(ex[0]),
+                            y: parseFloat(ex[1]),
+                            z: parseFloat(ex[2]),
+                        },
+                        lineX: parseFloat(ex[3]),
+                        lineY: parseFloat(ex[4]),
+                        cube: {
+                            x: parseFloat(ex[5]),
+                            y: parseFloat(ex[6]),
+                            z: parseFloat(ex[7]),
+                        },
+                        flags: parseInt(ex[8]),
+                        type: parseInt(ex[9]),
+                        name: ex[10],
+                    });
+                }
+                else if (currentSection === "zone") {
+                    // Map Zones
+                    const ex = line.split(",");
+                    parsedIPL.zone.push({
+                        name: ex[0],
+                        type: parseInt(ex[1]),
+                        min: {
+                            x: parseFloat(ex[2]),
+                            y: parseFloat(ex[3]),
+                            z: parseFloat(ex[4]),
+                        },
+                        max: {
+                            x: parseFloat(ex[5]),
+                            y: parseFloat(ex[6]),
+                            z: parseFloat(ex[7]),
+                        },
+                        island: parseInt(ex[8]),
+                        text: ex[9],
+                    });
+                }
+                else if (currentSection === "pick") {
+                    // Item Pickup
+                    const ex = line.split(",");
+                    parsedIPL.pick.push({
+                        id: parseInt(ex[0]),
+                        position: {
+                            x: parseFloat(ex[1]),
+                            y: parseFloat(ex[2]),
+                            z: parseFloat(ex[3]),
+                        },
+                    });
+                }
+                else {
+                    console.warn(`Ignoring IPL Section '${currentSection}'`);
                 }
             }
         }
@@ -352,6 +533,13 @@ class GameLoader extends events_1.default {
                 name: parsedPath.name,
                 iplObjects: parsedIPL.inst,
                 cullZones: parsedIPL.cull,
+                audioZones: parsedIPL.auzo,
+                enexMarkers: parsedIPL.enex,
+                occlusionZones: parsedIPL.occl,
+                timeCycleZones: parsedIPL.tcyc,
+                garageZones: parsedIPL.grge,
+                mapZones: parsedIPL.zone,
+                itemPickups: parsedIPL.pick,
                 streamedObjects: [],
             };
             // Attempt to pre-stream IPLs

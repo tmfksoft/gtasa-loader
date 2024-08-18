@@ -26,6 +26,13 @@ function start() {
         const gtaDir = "D:\\SteamLibrary\\steamapps\\common\\Grand Theft Auto San Andreas";
         const loader = new _1.default(gtaDir);
         yield loader.load();
+        const enex = [];
+        for (let ipl of loader.loadedIPLs) {
+            enex.push(...ipl.enexMarkers);
+        }
+        console.log({
+        //	enex
+        });
     });
 }
 start();
