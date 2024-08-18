@@ -539,7 +539,7 @@ class GameLoader extends EventEmitter {
 					// Map Zones
 					const ex = line.split(",");
 					parsedIPL.zone.push({
-						name: ex[0],
+						name: ex[0].trim(),
 						type: parseInt(ex[1]),
 						min: {
 							x: parseFloat(ex[2]),
@@ -552,7 +552,7 @@ class GameLoader extends EventEmitter {
 							z: parseFloat(ex[7]),
 						},
 						island: parseInt(ex[8]),
-						text: ex[9],
+						text: ex[9].trim(),
 					});
 				} else if (currentSection === "pick") {
 					// Item Pickup
