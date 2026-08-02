@@ -906,7 +906,7 @@ class GameLoader extends events_1.default {
         return reader;
     }
     /**
-     * Returns a PNG of the supplied texture path.
+     * Returns the raw RGBA pixel data of the supplied texture path.
      * Null if the texture doesn't exist.
      * @param txdPath Path to TXD, can be on disk or within an .img
      * @param textureName Name of texture within the TXD.
@@ -924,7 +924,7 @@ class GameLoader extends events_1.default {
             if (!txd) {
                 return null;
             }
-            const tex = txd.getPNG(textureName);
+            const tex = txd.getPixelData(textureName);
             return tex;
         });
     }

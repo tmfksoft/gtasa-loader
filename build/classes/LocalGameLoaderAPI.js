@@ -38,7 +38,7 @@ class LocalGameLoaderAPI {
             if (!texture) {
                 return null;
             }
-            return Uint8Array.from(texture);
+            return texture;
         });
     }
     getIDEObject(id) {

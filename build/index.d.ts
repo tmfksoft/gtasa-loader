@@ -4,6 +4,7 @@ import IDETimedObject from "./interfaces/ide/IDETimedObject";
 import IMGReader from "@majesticfudgie/img-reader";
 import DFFReader from "@majesticfudgie/dff-reader";
 import TXDReader from "@majesticfudgie/txd-reader";
+import PixelData from "@majesticfudgie/txd-reader/build/interfaces/PixelData";
 import ParsedIPL from "./interfaces/ipl/ParsedIPL";
 import MainIPL from "./interfaces/ipl/MainIPL";
 import WeatherDefinition from "./interfaces/WeatherDefinition";
@@ -92,12 +93,12 @@ declare class GameLoader extends EventEmitter {
     getDFF(filename: string): DFFReader | null;
     getTXD(filename: string): TXDReader | null;
     /**
-     * Returns a PNG of the supplied texture path.
+     * Returns the raw RGBA pixel data of the supplied texture path.
      * Null if the texture doesn't exist.
      * @param txdPath Path to TXD, can be on disk or within an .img
      * @param textureName Name of texture within the TXD.
      */
-    getTexture(txdPath: string, textureName: string): Promise<Buffer | null>;
+    getTexture(txdPath: string, textureName: string): Promise<PixelData | null>;
     loadWeather(): void;
     loadLanguages(): void;
     loadVehicleHandling(): void;

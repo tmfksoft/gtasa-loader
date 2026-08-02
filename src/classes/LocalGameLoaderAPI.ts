@@ -6,6 +6,7 @@ import WeatherDefinition from "../interfaces/WeatherDefinition";
 import GameLoaderAPI from "./GameLoaderAPI";
 import GameLoader from "..";
 import TXDFile from "@majesticfudgie/txd-reader/build/interfaces/TXDFile";
+import PixelData from "@majesticfudgie/txd-reader/build/interfaces/PixelData";
 import GeometryNode from "@majesticfudgie/dff-reader/build/interfaces/GeometryNode";
 import IDEAnimatedObject from "../interfaces/ide/IDEAnimatedObject";
 import AudioStream from "@majesticfudgie/sfx-reader/build/interfaces/AudioStream";
@@ -33,13 +34,13 @@ export default class LocalGameLoaderAPI implements GameLoaderAPI  {
 		return txd.parsed;
 	}
 
-	async getTexture(txdPath: string, textureName: string): Promise<Uint8Array | null> {
+	async getTexture(txdPath: string, textureName: string): Promise<PixelData | null> {
 		const texture = await this.loader.getTexture(txdPath, textureName);
 		if (!texture) {
 			return null;
 		}
 
-		return Uint8Array.from(texture);
+		return texture;
 	}
 
 	async getIDEObject(id: number): Promise<IDEObject | IDETimedObject | IDEAnimatedObject | null> {

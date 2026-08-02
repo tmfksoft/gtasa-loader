@@ -4,6 +4,7 @@ import WaterDefinition from "../interfaces/WaterDefinition";
 import IDEObject from "../interfaces/ide/IDEObject";
 import IDETimedObject from "../interfaces/ide/IDETimedObject";
 import TXDFile from "@majesticfudgie/txd-reader/build/interfaces/TXDFile";
+import PixelData from "@majesticfudgie/txd-reader/build/interfaces/PixelData";
 import GXTFile from "../interfaces/language/GXTFile";
 import GeometryNode from "@majesticfudgie/dff-reader/build/interfaces/GeometryNode";
 import VehicleDefinition from "../interfaces/vehicles/VehicleDefinition";
@@ -48,13 +49,13 @@ export default interface GameLoaderAPI {
      */
     getTXD: (filepath: string) => Promise<TXDFile | null>;
     /**
-     * Loads a TXD Texture and returns a Uint8Array containing PNG data
-     * Uint8Array seems to be a little more universally supported..
+     * Loads a TXD Texture and returns its raw RGBA pixel data along with
+     * its width and height.
      * Pass a path to the texture e.g. "models/particle.txd/waterclear256"
      * Useful for HTTP transports.
      * @param filepath Path to load TXD
      */
-    getTexture: (txdPath: string, textureName: string) => Promise<Uint8Array | null>;
+    getTexture: (txdPath: string, textureName: string) => Promise<PixelData | null>;
     /**
      * Loads an IDE Object from the games IDE definitions.
      * @param id ID of Object

@@ -8,6 +8,7 @@ import IDETimedObject from "./interfaces/ide/IDETimedObject";
 import IMGReader from "@majesticfudgie/img-reader";
 import DFFReader from "@majesticfudgie/dff-reader";
 import TXDReader from "@majesticfudgie/txd-reader";
+import PixelData from "@majesticfudgie/txd-reader/build/interfaces/PixelData";
 import PointerBuffer from "@majesticfudgie/pointer-buffer";
 import ParsedIPL from "./interfaces/ipl/ParsedIPL";
 import MainIPL from "./interfaces/ipl/MainIPL";
@@ -1045,12 +1046,12 @@ class GameLoader extends EventEmitter {
 	}
 
 	/**
-	 * Returns a PNG of the supplied texture path.
+	 * Returns the raw RGBA pixel data of the supplied texture path.
 	 * Null if the texture doesn't exist.
 	 * @param txdPath Path to TXD, can be on disk or within an .img
 	 * @param textureName Name of texture within the TXD.
 	 */
-	async getTexture(txdPath: string, textureName: string): Promise<Buffer | null> {
+	async getTexture(txdPath: string, textureName: string): Promise<PixelData | null> {
 		const parsedPath = this.parsePath(txdPath);
 
 		let txdFilename = parsedPath.archive;
@@ -1067,7 +1068,7 @@ class GameLoader extends EventEmitter {
 			return null;
 		}
 
-		const tex = txd.getPNG(textureName);
+		const tex = txd.getPixelData(textureName);
 
 		return tex;
 	}
