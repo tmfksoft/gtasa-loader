@@ -30,9 +30,10 @@ function start() {
         for (let ipl of loader.loadedIPLs) {
             enex.push(...ipl.enexMarkers);
         }
-        console.log({
-        //	enex
-        });
+        // LANG
+        const langLoader = loader.languageReaders[loader.language];
+        //fs.writeFileSync("language.json", JSON.stringify(langLoader.parsedGXT, null, '\t'));
+        console.log(langLoader.readString("ROCKET_HS") || "Missing language string");
     });
 }
 start();

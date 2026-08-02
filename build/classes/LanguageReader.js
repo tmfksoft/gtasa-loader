@@ -20,14 +20,19 @@ class LanguageReader {
     }
     readString(gxtKey) {
         const crc32 = CRC32_1.default.getKey(gxtKey);
+        let hits = 0;
+        let text = null;
         for (let table of this.parsedGXT.tables) {
             for (let subtable of table.subTables) {
                 if (typeof subtable.entries[crc32] !== "undefined") {
-                    return subtable.entries[crc32];
+                    text = subtable.entries[crc32];
                 }
             }
         }
-        return null;
+        if (hits > 1) {
+            console.log(`We found that language string ${hits} times`);
+        }
+        return text;
     }
     // Parses the GXT File into memory for future use.
     parse() {

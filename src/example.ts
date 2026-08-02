@@ -11,6 +11,7 @@ import GameLoader from ".";
 import IDEFlags from "./interfaces/ide/IDEFlags";
 import AudioZone from "./interfaces/ipl/AudioZone";
 import EnexMarker from "./interfaces/ipl/EnexMarker";
+import fs from "fs";
 
 async function start() {
 	
@@ -23,8 +24,10 @@ async function start() {
 	for (let ipl of loader.loadedIPLs) {
 		enex.push(...ipl.enexMarkers);
 	}
-	console.log({
-	//	enex
-	})
+
+	// LANG
+	const langLoader = loader.languageReaders[loader.language];
+	//fs.writeFileSync("language.json", JSON.stringify(langLoader.parsedGXT, null, '\t'));
+	console.log(langLoader.readString("ROCKET_HS") || "Missing language string");
 }
 start();

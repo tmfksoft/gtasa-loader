@@ -24,9 +24,12 @@ export default interface EnexMarker {
     timeOn: number;
     timeOff: number;
 }
-declare enum EnexFlag {
+export declare enum EnexFlag {
+    USE_PAIRED = 0,// Maybe means use the linked marker, or use previously entered marker?
+    UNKNOWN_9 = 9,// No idea
+    UNKNOWN_6 = 6,// Also, no idea, (Mission related?)
     UNKNOWN_INTERIOR = 1,// Only used for interior markers
-    UNKNNOW_PAIRING = 2,// Used mostly for interior markers. Also Big Ear & LS Skyscraper
+    UNKNOWN_PAIRING = 2,// Used mostly for interior markers. Also Big Ear & LS Skyscraper - Disable "walk through door" task
     CREATE_LINKED_PAIR = 4,// Pair with unflagged mate during new game start
     REWARD_INTERIOR = 8,// Sets flag 0010 on pair mate when used
     USED_REWARD_ENTRANCE = 16,// Set by accessing reward interior
@@ -42,4 +45,3 @@ declare enum EnexFlag {
     ENABLE_ACCESS = 16384,// Enabled by default; often cleared by scripts
     DELETE_ENEX = 32768
 }
-export {};
