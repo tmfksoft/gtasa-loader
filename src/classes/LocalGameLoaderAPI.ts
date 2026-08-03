@@ -21,8 +21,13 @@ export default class LocalGameLoaderAPI implements GameLoaderAPI  {
 		if (!dffLoader) {
 			return null;
 		}
-		const dff = dffLoader.getNode();
-		return dff;
+		try {
+			const dff = dffLoader.getNode();
+			return dff;
+		} catch (err) {
+			console.error(`Failed to parse DFF model "%s"`, filepath, err);
+			return null;
+		}
 	}
 
 	async getTXD(filepath: string): Promise<TXDFile | null> {

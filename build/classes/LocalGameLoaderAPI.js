@@ -19,8 +19,14 @@ class LocalGameLoaderAPI {
             if (!dffLoader) {
                 return null;
             }
-            const dff = dffLoader.getNode();
-            return dff;
+            try {
+                const dff = dffLoader.getNode();
+                return dff;
+            }
+            catch (err) {
+                console.error(`Failed to parse DFF model "%s"`, filepath, err);
+                return null;
+            }
         });
     }
     getTXD(filepath) {
