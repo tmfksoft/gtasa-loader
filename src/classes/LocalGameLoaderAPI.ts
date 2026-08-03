@@ -8,9 +8,11 @@ import GameLoader from "..";
 import TXDFile from "@majesticfudgie/txd-reader/build/interfaces/TXDFile";
 import PixelData from "@majesticfudgie/txd-reader/build/interfaces/PixelData";
 import GeometryNode from "@majesticfudgie/dff-reader/build/interfaces/GeometryNode";
+import Geometry from "@majesticfudgie/dff-reader/build/interfaces/Geometry";
 import IDEAnimatedObject from "../interfaces/ide/IDEAnimatedObject";
 import AudioStream from "@majesticfudgie/sfx-reader/build/interfaces/AudioStream";
 import SoundEffect from "@majesticfudgie/sfx-reader/build/interfaces/SoundEffect";
+import ResolvedUVAnimationChannel from "../interfaces/ResolvedUVAnimationChannel";
 
 export default class LocalGameLoaderAPI implements GameLoaderAPI  {
 
@@ -23,6 +25,27 @@ export default class LocalGameLoaderAPI implements GameLoaderAPI  {
 		}
 		try {
 			const dff = dffLoader.getNode();
+
+			// Attach each material's resolved UV animation now, while dffLoader
+			// (and its UV Animation Dictionary lookup) is still in scope.
+			const resolveUVAnimations = (node: GeometryNode | Geometry): void => {
+				if ("materials" in node) {
+					for (const mat of node.materials) {
+						if (!mat.uvAnimation) {
+							continue;
+						}
+						for (const channel of mat.uvAnimation.channels as ResolvedUVAnimationChannel[]) {
+							channel.animation = dffLoader.getUVAnimation(channel.name);
+						}
+					}
+					return;
+				}
+				for (const child of node.children) {
+					resolveUVAnimations(child);
+				}
+			};
+			resolveUVAnimations(dff);
+
 			return dff;
 		} catch (err) {
 			console.error(`Failed to parse DFF model "%s"`, filepath, err);

@@ -1,6 +1,6 @@
 {
   "name": "@majesticfudgie/gtasa-loader",
-  "version": "1.0.42",
+  "version": "1.0.43",
   "main": "build/index.js",
   "typings": "build/index.d.ts",
   "scripts": {

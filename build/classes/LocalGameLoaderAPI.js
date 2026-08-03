@@ -21,6 +21,25 @@ class LocalGameLoaderAPI {
             }
             try {
                 const dff = dffLoader.getNode();
+                // Attach each material's resolved UV animation now, while dffLoader
+                // (and its UV Animation Dictionary lookup) is still in scope.
+                const resolveUVAnimations = (node) => {
+                    if ("materials" in node) {
+                        for (const mat of node.materials) {
+                            if (!mat.uvAnimation) {
+                                continue;
+                            }
+                            for (const channel of mat.uvAnimation.channels) {
+                                channel.animation = dffLoader.getUVAnimation(channel.name);
+                            }
+                        }
+                        return;
+                    }
+                    for (const child of node.children) {
+                        resolveUVAnimations(child);
+                    }
+                };
+                resolveUVAnimations(dff);
                 return dff;
             }
             catch (err) {
