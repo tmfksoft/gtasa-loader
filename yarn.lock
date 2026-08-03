@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@majesticfudgie/dff-reader@^1.0.13":
-  version "1.0.13"
-  resolved "https://registry.yarnpkg.com/@majesticfudgie/dff-reader/-/dff-reader-1.0.13.tgz#e3e3dc31c699077bf6c33528703878ba52de4d15"
-  integrity sha512-uMe5MSsjmo3D2xYIGJZrLncTGdJPboY0kvZzNEduxHTYav+uNxNx0kFsyoHKR3CJX8PIE+P2xAOViNBxiGnmQQ==
+"@majesticfudgie/dff-reader@^2.0.3":
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/@majesticfudgie/dff-reader/-/dff-reader-2.0.3.tgz#fb45b28c96f57da18b1a2c056465f40517b7b688"
+  integrity sha512-H2dXAS39gzKV6c+qyIsBVsI9BlTSQ+YThyt1sYQ/lvuvw7RxrpZ11tn7HaTaW0di/puoSG9yCdJUS1VESG5/NQ==
 
 "@majesticfudgie/img-reader@^1.0.0":
   version "1.0.0"
