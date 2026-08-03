@@ -11,6 +11,7 @@ import PixelData from "@majesticfudgie/txd-reader/build/interfaces/PixelData";
 import GXTFile from "../interfaces/language/GXTFile";
 import GeometryNode from "@majesticfudgie/dff-reader/build/interfaces/GeometryNode";
 import COLModel from "@majesticfudgie/col-reader/build/interfaces/COLModel";
+import IFPAnimation from "@majesticfudgie/ifp-reader/build/interfaces/IFPAnimation";
 import VehicleDefinition from "../interfaces/vehicles/VehicleDefinition";
 import Color from "../interfaces/Color";
 import VehicleColor from "../interfaces/vehicles/VehicleColor";
@@ -66,6 +67,27 @@ export default interface GameLoaderAPI {
 	 * @returns Parsed collision model, or null if none exists for that name
 	 */
 	getCollisionModel: (modelName: string) => Promise<COLModel | null>,
+
+	/**
+	 * Looks up a single animation clip by its package (IFP file name,
+	 * without extension - e.g. "ped", "airport") and animation name (both
+	 * case-insensitive, matching how the game itself resolves them).
+	 * @returns Parsed animation clip, or null if the package/animation doesn't exist
+	 */
+	getAnimation: (packageName: string, animationName: string) => Promise<IFPAnimation | null>,
+
+	/**
+	 * Every loaded animation package name (IFP file name, without extension) -
+	 * e.g. "ped", "airport", "bar". Useful for populating a package picker.
+	 */
+	getAnimationPackageNames: () => Promise<string[]>,
+
+	/**
+	 * Every animation name within a given package, or an empty array if the
+	 * package doesn't exist. Useful for populating an animation picker once
+	 * a package has been chosen.
+	 */
+	getAnimationNames: (packageName: string) => Promise<string[]>,
 
 	/**
 	 * Loads a TXD Texture and returns its raw RGBA pixel data along with

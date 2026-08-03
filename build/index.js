@@ -19,6 +19,7 @@ const img_reader_1 = __importDefault(require("@majesticfudgie/img-reader"));
 const dff_reader_1 = __importDefault(require("@majesticfudgie/dff-reader"));
 const txd_reader_1 = __importDefault(require("@majesticfudgie/txd-reader"));
 const col_reader_1 = __importDefault(require("@majesticfudgie/col-reader"));
+const ifp_reader_1 = __importDefault(require("@majesticfudgie/ifp-reader"));
 const pointer_buffer_1 = __importDefault(require("@majesticfudgie/pointer-buffer"));
 const LocalGameLoaderAPI_1 = __importDefault(require("./classes/LocalGameLoaderAPI"));
 const LanguageReader_1 = __importDefault(require("./classes/LanguageReader"));
@@ -50,7 +51,12 @@ class GameLoader extends events_1.default {
                 // Preadd some core IMG files
                 'MODELS\\GTA3.IMG',
                 'MODELS\\GTA_INT.IMG',
-                'MODELS\\PLAYER.IMG'
+                'MODELS\\PLAYER.IMG',
+                // Not auto-mounted by the real game (it loads individual .ifp
+                // entries from this on demand, per context) - preadded anyway so
+                // loadAnimations() has every animation available up front, the
+                // same tradeoff already made for the loose ped.ifp/collision files.
+                'ANIM\\ANIM.IMG',
             ],
             ide: [
                 'DATA\\VEHICLES.IDE'
@@ -84,6 +90,12 @@ class GameLoader extends events_1.default {
         // archive per model like DFF/TXD, so these are indexed once up front at
         // load time instead of being fetched on demand.
         this.collisionModels = new Map();
+        // Animation packages (parsed .ifp files), keyed by lowercased filename
+        // without extension (e.g. "ped", "airport") - matches how the game
+        // itself references an IFP by its AnimGroup/file name, not the name
+        // embedded in the file's own header (untested whether that always
+        // matches the filename for every archive entry, so not relied on here).
+        this.animationPackages = new Map();
         // Defines what language the game will load by default
         this.language = "american";
         this.languageReaders = {};
@@ -828,6 +840,69 @@ class GameLoader extends events_1.default {
         var _a;
         return (_a = this.collisionModels.get(modelName.toLowerCase())) !== null && _a !== void 0 ? _a : null;
     }
+    // Parses every .ifp archive this reader found into this.animationPackages,
+    // keyed by filename (without extension). Call after loadIMG() - mirrors
+    // loadCollision()'s approach of walking the already-loaded IMG readers
+    // rather than re-reading anim.img etc separately.
+    loadAnimations() {
+        console.log("Loading Animation Files");
+        for (let imgPath in this.imgReaders) {
+            const reader = this.imgReaders[imgPath];
+            for (let entry of reader.entries) {
+                const name = entry.fileName.trim();
+                if (!name.toLowerCase().endsWith(".ifp")) {
+                    continue;
+                }
+                const raw = reader.readFile(name);
+                if (!raw) {
+                    continue;
+                }
+                this.indexAnimationPackage(raw, name, `${imgPath}/${name}`);
+            }
+        }
+        // The default ped animation set isn't bundled into any IMG archive -
+        // it's a loose file at anim/ped.ifp, always loaded regardless of
+        // which ped/context is active (unlike anim.img's other entries,
+        // which the real game swaps in on demand).
+        const loosePath = "ANIM\\PED.IFP";
+        const fullPath = path_1.default.join(this.gtaPath, loosePath);
+        if (fs_1.default.existsSync(fullPath)) {
+            this.indexAnimationPackage(fs_1.default.readFileSync(fullPath), "ped.ifp", loosePath);
+        }
+        else {
+            console.warn(`Unable to find loose animation file: %s`, fullPath);
+        }
+        console.log(`Loaded %s animation packages`, this.animationPackages.size);
+    }
+    indexAnimationPackage(raw, fileName, sourceLabel) {
+        const packageName = fileName.replace(/\.ifp$/i, "").toLowerCase();
+        try {
+            this.animationPackages.set(packageName, new ifp_reader_1.default(raw));
+        }
+        catch (err) {
+            console.warn(`Failed to parse animation package %s`, sourceLabel, err);
+        }
+    }
+    /**
+     * Looks up a single animation clip by its package (IFP file name, without
+     * extension - e.g. "ped", "airport") and animation name (both
+     * case-insensitive, matching how the game itself resolves them).
+     */
+    getAnimation(packageName, animationName) {
+        var _a;
+        const pkg = this.animationPackages.get(packageName.toLowerCase());
+        return (_a = pkg === null || pkg === void 0 ? void 0 : pkg.getAnimation(animationName)) !== null && _a !== void 0 ? _a : null;
+    }
+    /** Every loaded animation package name (IFP file name, without extension). */
+    getAnimationPackageNames() {
+        return [...this.animationPackages.keys()];
+    }
+    /** Every animation name within a given package, or an empty array if the package doesn't exist. */
+    getAnimationNames(packageName) {
+        var _a;
+        const pkg = this.animationPackages.get(packageName.toLowerCase());
+        return (_a = pkg === null || pkg === void 0 ? void 0 : pkg.animations.map(a => a.name)) !== null && _a !== void 0 ? _a : [];
+    }
     getAssociatedIMG(filename) {
         for (let fileEntry in this.imgContents) {
             if (fileEntry.toLowerCase() === filename.toLowerCase()) {
@@ -1387,22 +1462,24 @@ class GameLoader extends events_1.default {
             this.emit("loading", { stage: 2 }); // Loaded IMG Data
             this.loadCollision();
             this.emit("loading", { stage: 3 }); // Loaded Collision Data
+            this.loadAnimations();
+            this.emit("loading", { stage: 4 }); // Loaded Animation Data
             this.loadIDE();
-            this.emit("loading", { stage: 4 }); // Loaded IDE Files
+            this.emit("loading", { stage: 5 }); // Loaded IDE Files
             this.loadIPL();
-            this.emit("loading", { stage: 5 }); // Loaded IPL Files
+            this.emit("loading", { stage: 6 }); // Loaded IPL Files
             this.loadWeather();
-            this.emit("loading", { stage: 6 }); // Loaded Weather Data
+            this.emit("loading", { stage: 7 }); // Loaded Weather Data
             this.loadWaterDefinitions();
-            this.emit("loading", { stage: 7 }); // Loaded Water Data
+            this.emit("loading", { stage: 8 }); // Loaded Water Data
             this.loadLanguages();
-            this.emit("loading", { stage: 8 }); // Loaded Language Data
+            this.emit("loading", { stage: 9 }); // Loaded Language Data
             this.loadCarCols();
-            this.emit("loading", { stage: 9 }); // Loaded Car Colour Data
+            this.emit("loading", { stage: 10 }); // Loaded Car Colour Data
             this.loadVehicleHandling();
-            this.emit("loading", { stage: 10 }); // Loaded Vehicle Handling Data
+            this.emit("loading", { stage: 11 }); // Loaded Vehicle Handling Data
             yield this.sfx.load();
-            this.emit("loading", { stage: 11 }); // Loaded sound effects
+            this.emit("loading", { stage: 12 }); // Loaded sound effects
             // When Loading Stage is equal to the amount of loading stages the loader is finished.
         });
     }

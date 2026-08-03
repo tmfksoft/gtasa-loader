@@ -12,12 +12,16 @@ import IDEAnimatedObject from "../interfaces/ide/IDEAnimatedObject";
 import AudioStream from "@majesticfudgie/sfx-reader/build/interfaces/AudioStream";
 import SoundEffect from "@majesticfudgie/sfx-reader/build/interfaces/SoundEffect";
 import COLModel from "@majesticfudgie/col-reader/build/interfaces/COLModel";
+import IFPAnimation from "@majesticfudgie/ifp-reader/build/interfaces/IFPAnimation";
 export default class LocalGameLoaderAPI implements GameLoaderAPI {
     protected loader: GameLoader;
     constructor(loader: GameLoader);
     getDFF(filepath: string): Promise<GeometryNode | null>;
     getTXD(filepath: string): Promise<TXDFile | null>;
     getCollisionModel(modelName: string): Promise<COLModel | null>;
+    getAnimation(packageName: string, animationName: string): Promise<IFPAnimation | null>;
+    getAnimationPackageNames(): Promise<string[]>;
+    getAnimationNames(packageName: string): Promise<string[]>;
     getTexture(txdPath: string, textureName: string): Promise<PixelData | null>;
     getIDEObject(id: number): Promise<IDEObject | IDETimedObject | IDEAnimatedObject | null>;
     getIPL(): Promise<MainIPL[]>;

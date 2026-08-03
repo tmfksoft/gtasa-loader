@@ -14,6 +14,7 @@ import AudioStream from "@majesticfudgie/sfx-reader/build/interfaces/AudioStream
 import SoundEffect from "@majesticfudgie/sfx-reader/build/interfaces/SoundEffect";
 import ResolvedUVAnimationChannel from "../interfaces/ResolvedUVAnimationChannel";
 import COLModel from "@majesticfudgie/col-reader/build/interfaces/COLModel";
+import IFPAnimation from "@majesticfudgie/ifp-reader/build/interfaces/IFPAnimation";
 
 export default class LocalGameLoaderAPI implements GameLoaderAPI  {
 
@@ -65,6 +66,18 @@ export default class LocalGameLoaderAPI implements GameLoaderAPI  {
 
 	async getCollisionModel(modelName: string): Promise<COLModel | null> {
 		return this.loader.getCollisionModel(modelName);
+	}
+
+	async getAnimation(packageName: string, animationName: string): Promise<IFPAnimation | null> {
+		return this.loader.getAnimation(packageName, animationName);
+	}
+
+	async getAnimationPackageNames(): Promise<string[]> {
+		return this.loader.getAnimationPackageNames();
+	}
+
+	async getAnimationNames(packageName: string): Promise<string[]> {
+		return this.loader.getAnimationNames(packageName);
 	}
 
 	async getTexture(txdPath: string, textureName: string): Promise<PixelData | null> {

@@ -62,6 +62,21 @@ class LocalGameLoaderAPI {
             return this.loader.getCollisionModel(modelName);
         });
     }
+    getAnimation(packageName, animationName) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.loader.getAnimation(packageName, animationName);
+        });
+    }
+    getAnimationPackageNames() {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.loader.getAnimationPackageNames();
+        });
+    }
+    getAnimationNames(packageName) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.loader.getAnimationNames(packageName);
+        });
+    }
     getTexture(txdPath, textureName) {
         return __awaiter(this, void 0, void 0, function* () {
             const texture = yield this.loader.getTexture(txdPath, textureName);

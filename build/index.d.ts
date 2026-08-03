@@ -5,6 +5,8 @@ import IMGReader from "@majesticfudgie/img-reader";
 import DFFReader from "@majesticfudgie/dff-reader";
 import TXDReader from "@majesticfudgie/txd-reader";
 import COLModel from "@majesticfudgie/col-reader/build/interfaces/COLModel";
+import IFPReader from "@majesticfudgie/ifp-reader";
+import IFPAnimation from "@majesticfudgie/ifp-reader/build/interfaces/IFPAnimation";
 import PixelData from "@majesticfudgie/txd-reader/build/interfaces/PixelData";
 import ParsedIPL from "./interfaces/ipl/ParsedIPL";
 import MainIPL from "./interfaces/ipl/MainIPL";
@@ -58,6 +60,7 @@ declare class GameLoader extends EventEmitter {
         [key: string]: string;
     };
     collisionModels: Map<string, COLModel>;
+    animationPackages: Map<string, IFPReader>;
     language: Language;
     languageReaders: {
         [key: string]: LanguageReader;
@@ -80,6 +83,18 @@ declare class GameLoader extends EventEmitter {
      * DFF/IDE model name it applies to.
      */
     getCollisionModel(modelName: string): COLModel | null;
+    loadAnimations(): void;
+    private indexAnimationPackage;
+    /**
+     * Looks up a single animation clip by its package (IFP file name, without
+     * extension - e.g. "ped", "airport") and animation name (both
+     * case-insensitive, matching how the game itself resolves them).
+     */
+    getAnimation(packageName: string, animationName: string): IFPAnimation | null;
+    /** Every loaded animation package name (IFP file name, without extension). */
+    getAnimationPackageNames(): string[];
+    /** Every animation name within a given package, or an empty array if the package doesn't exist. */
+    getAnimationNames(packageName: string): string[];
     getAssociatedIMG(filename: string): string | null;
     parsePath(filePath: string): {
         archive: string;
