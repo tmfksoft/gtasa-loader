@@ -650,25 +650,27 @@ class GameLoader extends events_1.default {
                 }
                 if (currentSection === "tobj") {
                     const ex = line.split(",");
-                    // Object Count is optional and defaults to 1
-                    let objectCount = 1;
-                    if (ex.length > 7) {
-                        objectCount = parseInt(ex[3]);
-                    }
-                    // This is dependant on Object Count
+                    // TOBJ format: ID, ModelName, TxdName, {DrawDist...}, Flags, TimeOn, TimeOff
+                    // Same variable-length LOD-chain shape as OBJS above, just with two
+                    // extra trailing time fields - unlike OBJS's "Type 2/3" variants,
+                    // there is no explicit object/LOD count field to read; it's inferred
+                    // from the line length instead (confirmed against real IDE data,
+                    // e.g. VegasN.ide: "casinoblock2_dy, vgnfremnt2, 150, 128, 6, 21" is
+                    // dist=150, flags=128, timeOn=6, timeOff=21 - no count field).
+                    const objectCount = Math.max(1, ex.length - 6);
                     const drawDistance = [];
                     for (let i = 0; i < objectCount; i++) {
-                        drawDistance.push(parseFloat(ex[4 + i]));
+                        drawDistance.push(parseFloat(ex[3 + i]));
                     }
                     this.ideTimedObjects.push({
                         id: parseInt(ex[0]),
                         modelName: ex[1].trim(),
                         textureName: ex[2].trim(),
-                        objectCount, // 3
-                        drawDistance, // 4+
+                        objectCount,
+                        drawDistance, // 3 .. 2+objectCount
                         flags: parseInt(ex[3 + objectCount]),
-                        timeOn: parseInt(ex[3 + objectCount]),
-                        timeOff: parseInt(ex[3 + objectCount]),
+                        timeOn: parseInt(ex[4 + objectCount]),
+                        timeOff: parseInt(ex[5 + objectCount]),
                     });
                 }
                 if (currentSection === "anim") {
