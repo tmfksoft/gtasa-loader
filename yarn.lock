@@ -2,6 +2,11 @@
 # yarn lockfile v1
 
 
+"@majesticfudgie/col-reader@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@majesticfudgie/col-reader/-/col-reader-1.0.0.tgz#4d30c55878bd2a3af5267d280b48532d2e4fe823"
+  integrity sha512-EQS9KVxEWnpTgsUvaFav4pNkh/pNFkc1aNiqzfSvjyJ3Mu9n5xXSS3GeaigjgO+ZCNRpJ+d7Cdh0x4PS1LuQWA==
+
 "@majesticfudgie/dff-reader@^2.1.0":
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/@majesticfudgie/dff-reader/-/dff-reader-2.1.0.tgz#aa01344aae59a056fdd19f094ca04ba338372ee2"

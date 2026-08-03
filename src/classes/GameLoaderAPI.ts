@@ -10,6 +10,7 @@ import TXDFile from "@majesticfudgie/txd-reader/build/interfaces/TXDFile";
 import PixelData from "@majesticfudgie/txd-reader/build/interfaces/PixelData";
 import GXTFile from "../interfaces/language/GXTFile";
 import GeometryNode from "@majesticfudgie/dff-reader/build/interfaces/GeometryNode";
+import COLModel from "@majesticfudgie/col-reader/build/interfaces/COLModel";
 import VehicleDefinition from "../interfaces/vehicles/VehicleDefinition";
 import Color from "../interfaces/Color";
 import VehicleColor from "../interfaces/vehicles/VehicleColor";
@@ -55,6 +56,16 @@ export default interface GameLoaderAPI {
 	 * @returns Parsed TXD Data
 	 */
 	getTXD: (filepath: string) => Promise<TXDFile | null>,
+
+	/**
+	 * Looks up a collision model by name (matches the DFF/IDE model name it
+	 * applies to). Unlike DFF/TXD, .col archives bundle many named models
+	 * each rather than one per file, so this is a name lookup against an
+	 * index built once at load time rather than a per-file fetch.
+	 * @param modelName Model name (case-insensitive)
+	 * @returns Parsed collision model, or null if none exists for that name
+	 */
+	getCollisionModel: (modelName: string) => Promise<COLModel | null>,
 
 	/**
 	 * Loads a TXD Texture and returns its raw RGBA pixel data along with

@@ -4,6 +4,7 @@ import IDETimedObject from "./interfaces/ide/IDETimedObject";
 import IMGReader from "@majesticfudgie/img-reader";
 import DFFReader from "@majesticfudgie/dff-reader";
 import TXDReader from "@majesticfudgie/txd-reader";
+import COLModel from "@majesticfudgie/col-reader/build/interfaces/COLModel";
 import PixelData from "@majesticfudgie/txd-reader/build/interfaces/PixelData";
 import ParsedIPL from "./interfaces/ipl/ParsedIPL";
 import MainIPL from "./interfaces/ipl/MainIPL";
@@ -56,6 +57,7 @@ declare class GameLoader extends EventEmitter {
     imgContents: {
         [key: string]: string;
     };
+    collisionModels: Map<string, COLModel>;
     language: Language;
     languageReaders: {
         [key: string]: LanguageReader;
@@ -71,6 +73,13 @@ declare class GameLoader extends EventEmitter {
     loadIDE(): void;
     getObject(id: number): IDEObject | IDETimedObject | IDEAnimatedObject | null;
     loadIMG(): void;
+    loadCollision(): void;
+    private indexCollisionArchive;
+    /**
+     * Looks up a collision model by name (case-insensitive) - matches the
+     * DFF/IDE model name it applies to.
+     */
+    getCollisionModel(modelName: string): COLModel | null;
     getAssociatedIMG(filename: string): string | null;
     parsePath(filePath: string): {
         archive: string;

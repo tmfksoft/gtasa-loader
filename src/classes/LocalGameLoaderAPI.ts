@@ -13,6 +13,7 @@ import IDEAnimatedObject from "../interfaces/ide/IDEAnimatedObject";
 import AudioStream from "@majesticfudgie/sfx-reader/build/interfaces/AudioStream";
 import SoundEffect from "@majesticfudgie/sfx-reader/build/interfaces/SoundEffect";
 import ResolvedUVAnimationChannel from "../interfaces/ResolvedUVAnimationChannel";
+import COLModel from "@majesticfudgie/col-reader/build/interfaces/COLModel";
 
 export default class LocalGameLoaderAPI implements GameLoaderAPI  {
 
@@ -60,6 +61,10 @@ export default class LocalGameLoaderAPI implements GameLoaderAPI  {
 		}
 
 		return txd.parsed;
+	}
+
+	async getCollisionModel(modelName: string): Promise<COLModel | null> {
+		return this.loader.getCollisionModel(modelName);
 	}
 
 	async getTexture(txdPath: string, textureName: string): Promise<PixelData | null> {

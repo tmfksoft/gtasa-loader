@@ -18,6 +18,7 @@ const fs_1 = __importDefault(require("fs"));
 const img_reader_1 = __importDefault(require("@majesticfudgie/img-reader"));
 const dff_reader_1 = __importDefault(require("@majesticfudgie/dff-reader"));
 const txd_reader_1 = __importDefault(require("@majesticfudgie/txd-reader"));
+const col_reader_1 = __importDefault(require("@majesticfudgie/col-reader"));
 const pointer_buffer_1 = __importDefault(require("@majesticfudgie/pointer-buffer"));
 const LocalGameLoaderAPI_1 = __importDefault(require("./classes/LocalGameLoaderAPI"));
 const LanguageReader_1 = __importDefault(require("./classes/LanguageReader"));
@@ -78,6 +79,11 @@ class GameLoader extends events_1.default {
         this.imgReaders = {};
         // filename and its corresponding IMG file.
         this.imgContents = {};
+        // Collision models, keyed by lowercased model name. .col archives bundle
+        // many named models each (e.g. one archive per map zone) rather than one
+        // archive per model like DFF/TXD, so these are indexed once up front at
+        // load time instead of being fetched on demand.
+        this.collisionModels = new Map();
         // Defines what language the game will load by default
         this.language = "american";
         this.languageReaders = {};
@@ -769,6 +775,59 @@ class GameLoader extends events_1.default {
             }
         }
     }
+    // Parses every .col archive this reader found (each holding many named
+    // models) into this.collisionModels. Call after loadIMG() - it walks
+    // the already-loaded IMG readers rather than reading gta3.img etc again.
+    loadCollision() {
+        console.log("Loading Collision Files");
+        for (let imgPath in this.imgReaders) {
+            const reader = this.imgReaders[imgPath];
+            for (let entry of reader.entries) {
+                const name = entry.fileName.trim();
+                if (!name.toLowerCase().endsWith(".col")) {
+                    continue;
+                }
+                const raw = reader.readFile(name);
+                if (!raw) {
+                    continue;
+                }
+                this.indexCollisionArchive(raw, `${imgPath}/${name}`);
+            }
+        }
+        // Ped/vehicle/weapon collision isn't bundled into any IMG archive -
+        // it's a handful of loose files under models/coll/.
+        const looseArchives = ["MODELS\\COLL\\PEDS.COL", "MODELS\\COLL\\VEHICLES.COL", "MODELS\\COLL\\WEAPONS.COL"];
+        for (let relPath of looseArchives) {
+            const fullPath = path_1.default.join(this.gtaPath, relPath);
+            if (!fs_1.default.existsSync(fullPath)) {
+                console.warn(`Unable to find loose collision file: %s`, fullPath);
+                continue;
+            }
+            this.indexCollisionArchive(fs_1.default.readFileSync(fullPath), relPath);
+        }
+        console.log(`Loaded %s collision models`, this.collisionModels.size);
+    }
+    indexCollisionArchive(raw, sourceLabel) {
+        let reader;
+        try {
+            reader = new col_reader_1.default(raw);
+        }
+        catch (err) {
+            console.warn(`Failed to parse collision archive %s`, sourceLabel, err);
+            return;
+        }
+        for (let model of reader.models) {
+            this.collisionModels.set(model.name.toLowerCase(), model);
+        }
+    }
+    /**
+     * Looks up a collision model by name (case-insensitive) - matches the
+     * DFF/IDE model name it applies to.
+     */
+    getCollisionModel(modelName) {
+        var _a;
+        return (_a = this.collisionModels.get(modelName.toLowerCase())) !== null && _a !== void 0 ? _a : null;
+    }
     getAssociatedIMG(filename) {
         for (let fileEntry in this.imgContents) {
             if (fileEntry.toLowerCase() === filename.toLowerCase()) {
@@ -1326,22 +1385,24 @@ class GameLoader extends events_1.default {
             // Load in resources as needed.
             this.loadIMG();
             this.emit("loading", { stage: 2 }); // Loaded IMG Data
+            this.loadCollision();
+            this.emit("loading", { stage: 3 }); // Loaded Collision Data
             this.loadIDE();
-            this.emit("loading", { stage: 3 }); // Loaded IDE Files
+            this.emit("loading", { stage: 4 }); // Loaded IDE Files
             this.loadIPL();
-            this.emit("loading", { stage: 4 }); // Loaded IPL Files
+            this.emit("loading", { stage: 5 }); // Loaded IPL Files
             this.loadWeather();
-            this.emit("loading", { stage: 5 }); // Loaded Weather Data
+            this.emit("loading", { stage: 6 }); // Loaded Weather Data
             this.loadWaterDefinitions();
-            this.emit("loading", { stage: 6 }); // Loaded Water Data
+            this.emit("loading", { stage: 7 }); // Loaded Water Data
             this.loadLanguages();
-            this.emit("loading", { stage: 7 }); // Loaded Language Data
+            this.emit("loading", { stage: 8 }); // Loaded Language Data
             this.loadCarCols();
-            this.emit("loading", { stage: 8 }); // Loaded Car Colour Data
+            this.emit("loading", { stage: 9 }); // Loaded Car Colour Data
             this.loadVehicleHandling();
-            this.emit("loading", { stage: 9 }); // Loaded Vehicle Handling Data
+            this.emit("loading", { stage: 10 }); // Loaded Vehicle Handling Data
             yield this.sfx.load();
-            this.emit("loading", { stage: 10 }); // Loaded sound effects
+            this.emit("loading", { stage: 11 }); // Loaded sound effects
             // When Loading Stage is equal to the amount of loading stages the loader is finished.
         });
     }

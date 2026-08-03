@@ -57,6 +57,11 @@ class LocalGameLoaderAPI {
             return txd.parsed;
         });
     }
+    getCollisionModel(modelName) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.loader.getCollisionModel(modelName);
+        });
+    }
     getTexture(txdPath, textureName) {
         return __awaiter(this, void 0, void 0, function* () {
             const texture = yield this.loader.getTexture(txdPath, textureName);

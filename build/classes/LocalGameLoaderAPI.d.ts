@@ -11,11 +11,13 @@ import GeometryNode from "@majesticfudgie/dff-reader/build/interfaces/GeometryNo
 import IDEAnimatedObject from "../interfaces/ide/IDEAnimatedObject";
 import AudioStream from "@majesticfudgie/sfx-reader/build/interfaces/AudioStream";
 import SoundEffect from "@majesticfudgie/sfx-reader/build/interfaces/SoundEffect";
+import COLModel from "@majesticfudgie/col-reader/build/interfaces/COLModel";
 export default class LocalGameLoaderAPI implements GameLoaderAPI {
     protected loader: GameLoader;
     constructor(loader: GameLoader);
     getDFF(filepath: string): Promise<GeometryNode | null>;
     getTXD(filepath: string): Promise<TXDFile | null>;
+    getCollisionModel(modelName: string): Promise<COLModel | null>;
     getTexture(txdPath: string, textureName: string): Promise<PixelData | null>;
     getIDEObject(id: number): Promise<IDEObject | IDETimedObject | IDEAnimatedObject | null>;
     getIPL(): Promise<MainIPL[]>;
