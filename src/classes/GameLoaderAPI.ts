@@ -4,6 +4,7 @@ import Geometry from "@majesticfudgie/dff-reader/build/interfaces/Geometry";
 import MainIPL from "../interfaces/ipl/MainIPL";
 import WeatherDefinition from "../interfaces/WeatherDefinition";
 import WaterDefinition from "../interfaces/WaterDefinition";
+import PathArea from "../interfaces/paths/PathArea";
 import IDEObject from "../interfaces/ide/IDEObject";
 import IDETimedObject from "../interfaces/ide/IDETimedObject";
 import TXDFile from "@majesticfudgie/txd-reader/build/interfaces/TXDFile";
@@ -146,6 +147,20 @@ export default interface GameLoaderAPI {
 	 * @returns Raw data from water.dat but parsed into objects
 	 */
 	getWater: () => Promise<WaterDefinition[]>,
+
+	/**
+	 * Gets the path node network from data/paths/NODES*.DAT - the waypoint
+	 * graphs the game drives pedestrians and traffic along.
+	 *
+	 * Returned as one entry per area file, indexed by area id, because a
+	 * node's links can cross into a neighbouring area and need the other
+	 * areas present to resolve. Each area lists vehicle nodes first and
+	 * pedestrian nodes after, and every node carries its links already
+	 * resolved out of the on-disk link table.
+	 *
+	 * @returns Path areas indexed by area id
+	 */
+	getPathNodes: () => Promise<PathArea[]>,
 
 	/**
 	 * Fetches the language string for the key provided.

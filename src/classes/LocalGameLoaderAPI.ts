@@ -2,6 +2,7 @@ import IDEObject from "../interfaces/ide/IDEObject";
 import IDETimedObject from "../interfaces/ide/IDETimedObject";
 import MainIPL from "../interfaces/ipl/MainIPL";
 import WaterDefinition from "../interfaces/WaterDefinition";
+import PathArea from "../interfaces/paths/PathArea";
 import WeatherDefinition from "../interfaces/WeatherDefinition";
 import GameLoaderAPI from "./GameLoaderAPI";
 import GameLoader from "..";
@@ -106,6 +107,10 @@ export default class LocalGameLoaderAPI implements GameLoaderAPI  {
 
 	async getWater(): Promise<WaterDefinition[]> {
 		return this.loader.waterDefinitions;
+	}
+
+	async getPathNodes(): Promise<PathArea[]> {
+		return this.loader.pathAreas;
 	}
 
 	async getLanguageString(key: string) {

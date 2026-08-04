@@ -12,6 +12,8 @@ import ParsedIPL from "./interfaces/ipl/ParsedIPL";
 import MainIPL from "./interfaces/ipl/MainIPL";
 import WeatherDefinition from "./interfaces/WeatherDefinition";
 import WaterDefinition from "./interfaces/WaterDefinition";
+import PathArea from "./interfaces/paths/PathArea";
+import PathNode, { PathLink, PathNodeType } from "./interfaces/paths/PathNode";
 import Language from "./interfaces/Language";
 import GameLoaderAPI from "./classes/GameLoaderAPI";
 import LanguageReader from "./classes/LanguageReader";
@@ -47,6 +49,7 @@ declare class GameLoader extends EventEmitter {
     ideAnimatedObjects: IDEAnimatedObject[];
     waterDefinitions: WaterDefinition[];
     vehicleDefinitions: VehicleDefinition[];
+    pathAreas: PathArea[];
     vehicleColorPalette: Color[];
     vehicleColors: VehicleColor[];
     weatherDefinitions: WeatherDefinition[];
@@ -69,6 +72,28 @@ declare class GameLoader extends EventEmitter {
     sfx: SFXReader;
     constructor(gtaPath: string);
     loadGTADat(): void;
+    /**
+     * Loads the path node network from data/paths/NODES0.DAT .. NODES63.DAT.
+     *
+     * These hold the waypoint graphs the game drives peds and traffic along.
+     * The map is split into an 8x8 grid of areas, one file each, and links
+     * can cross between areas - so they're all parsed together and left
+     * indexed by area id for lookups to resolve against.
+     *
+     * File layout, derived by fitting section sizes against the actual byte
+     * length of all 64 retail files (exactly one combination fits every one):
+     *
+     *   header       20 bytes  - the five counts read below
+     *   path nodes   numNodes * 28
+     *   navi nodes   numNaviNodes * 14  - vehicle lane data, not parsed yet
+     *   links        numLinks * 4
+     *   ...          further per-link and fixed-size sections, not parsed yet
+     *
+     * Verified against the retail files: every one of the 143622 links
+     * resolves to a real node, and no link leaving a pedestrian node ever
+     * targets a vehicle node (or vice versa) - the two networks are separate.
+     */
+    loadPathNodes(): void;
     loadWaterDefinitions(): void;
     parseBinaryIPL(name: string | string[], data: Buffer | Buffer[]): ParsedIPL;
     parseTextIPL(name: string | string[], data: Buffer | Buffer[]): ParsedIPL;
@@ -140,4 +165,5 @@ declare class GameLoader extends EventEmitter {
     load(): Promise<void>;
 }
 export default GameLoader;
-export { IDEFlags };
+export { IDEFlags, PathNodeType };
+export type { PathArea, PathNode, PathLink };

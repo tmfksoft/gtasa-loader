@@ -2,6 +2,7 @@ import IDEObject from "../interfaces/ide/IDEObject";
 import IDETimedObject from "../interfaces/ide/IDETimedObject";
 import MainIPL from "../interfaces/ipl/MainIPL";
 import WaterDefinition from "../interfaces/WaterDefinition";
+import PathArea from "../interfaces/paths/PathArea";
 import WeatherDefinition from "../interfaces/WeatherDefinition";
 import GameLoaderAPI from "./GameLoaderAPI";
 import GameLoader from "..";
@@ -30,6 +31,7 @@ export default class LocalGameLoaderAPI implements GameLoaderAPI {
     }>;
     getWeatherDefinitions(): Promise<WeatherDefinition[]>;
     getWater(): Promise<WaterDefinition[]>;
+    getPathNodes(): Promise<PathArea[]>;
     getLanguageString(key: string): Promise<string | null>;
     getLanguageData(language: string): Promise<import("../interfaces/language/GXTFile").default | null>;
     getVehicles(): Promise<import("../interfaces/vehicles/VehicleDefinition").default[]>;

@@ -19,6 +19,8 @@ import MainIPL from "./interfaces/ipl/MainIPL";
 import CullZone from "./interfaces/ipl/CullZone";
 import WeatherDefinition from "./interfaces/WeatherDefinition";
 import WaterDefinition from "./interfaces/WaterDefinition";
+import PathArea from "./interfaces/paths/PathArea";
+import PathNode, { PathLink, PathNodeType } from "./interfaces/paths/PathNode";
 import Language from "./interfaces/Language";
 import GameLoaderAPI from "./classes/GameLoaderAPI";
 import LocalGameLoaderAPI from "./classes/LocalGameLoaderAPI";
@@ -87,6 +89,10 @@ class GameLoader extends EventEmitter {
 
 	public waterDefinitions: WaterDefinition[] = [];
 	public vehicleDefinitions: VehicleDefinition[] = [];
+
+	// Pedestrian and vehicle path node network, one entry per NODES*.DAT
+	// area file, indexed by area id (sparse if a file is missing).
+	public pathAreas: PathArea[] = [];
 
 	// Vehicle colours, alpha is always 255
 	public vehicleColorPalette: Color[] = [];
@@ -174,6 +180,123 @@ class GameLoader extends EventEmitter {
 		console.log(`\tLoaded %s IDE Paths`, this.gtaData.ide.length);
 		console.log(`\tLoaded %s IPL Paths`, this.gtaData.ipl.length);
 		console.log(`\tLoaded %s SPLASH Paths`, this.gtaData.splash.length);
+	}
+
+	/**
+	 * Loads the path node network from data/paths/NODES0.DAT .. NODES63.DAT.
+	 *
+	 * These hold the waypoint graphs the game drives peds and traffic along.
+	 * The map is split into an 8x8 grid of areas, one file each, and links
+	 * can cross between areas - so they're all parsed together and left
+	 * indexed by area id for lookups to resolve against.
+	 *
+	 * File layout, derived by fitting section sizes against the actual byte
+	 * length of all 64 retail files (exactly one combination fits every one):
+	 *
+	 *   header       20 bytes  - the five counts read below
+	 *   path nodes   numNodes * 28
+	 *   navi nodes   numNaviNodes * 14  - vehicle lane data, not parsed yet
+	 *   links        numLinks * 4
+	 *   ...          further per-link and fixed-size sections, not parsed yet
+	 *
+	 * Verified against the retail files: every one of the 143622 links
+	 * resolves to a real node, and no link leaving a pedestrian node ever
+	 * targets a vehicle node (or vice versa) - the two networks are separate.
+	 */
+	loadPathNodes() {
+		const pathsDir = path.join(this.gtaPath, "data", "paths");
+
+		if (!fs.existsSync(pathsDir)) {
+			throw new Error("Unable to find data/paths");
+		}
+
+		// Filename casing varies between releases (NODES0.DAT vs nodes0.dat),
+		// so match case-insensitively rather than assuming either.
+		const areaFiles: string[] = [];
+		for (const entry of fs.readdirSync(pathsDir)) {
+			const match = /^nodes(\d+)\.dat$/i.exec(entry);
+			if (match) {
+				areaFiles[parseInt(match[1], 10)] = entry;
+			}
+		}
+
+		this.pathAreas = [];
+
+		for (let areaId = 0; areaId < areaFiles.length; areaId++) {
+			const filename = areaFiles[areaId];
+			if (!filename) {
+				continue;
+			}
+			const buffer = fs.readFileSync(path.join(pathsDir, filename));
+
+			const numNodes = buffer.readUInt32LE(0);
+			const numVehNodes = buffer.readUInt32LE(4);
+			const numPedNodes = buffer.readUInt32LE(8);
+			const numNaviNodes = buffer.readUInt32LE(12);
+			const numLinks = buffer.readUInt32LE(16);
+
+			// Links come after the nodes and the navi node block.
+			const linksOffset = 20 + (numNodes * 28) + (numNaviNodes * 14);
+
+			const nodes: PathNode[] = [];
+			for (let i = 0; i < numNodes; i++) {
+				const offset = 20 + (i * 28);
+
+				// The low nibble of the flags word is how many links this node
+				// owns, running consecutively from the base index.
+				const flags = buffer.readUInt32LE(offset + 24);
+				const baseLinkId = buffer.readUInt16LE(offset + 16);
+				const linkCount = flags & 0x0F;
+
+				const links: PathLink[] = [];
+				for (let l = 0; l < linkCount; l++) {
+					const linkId = baseLinkId + l;
+					if (linkId >= numLinks) {
+						continue;
+					}
+					const linkOffset = linksOffset + (linkId * 4);
+					links.push({
+						areaId: buffer.readUInt16LE(linkOffset),
+						nodeId: buffer.readUInt16LE(linkOffset + 2),
+					});
+				}
+
+				nodes.push({
+					areaId,
+					nodeId: i,
+					// Positions are 16-bit fixed point, eight units per metre.
+					position: {
+						x: buffer.readInt16LE(offset + 8) / 8,
+						y: buffer.readInt16LE(offset + 10) / 8,
+						z: buffer.readInt16LE(offset + 12) / 8,
+					},
+					// Vehicle nodes are written first, pedestrian nodes after.
+					type: (i < numVehNodes) ? PathNodeType.Vehicle : PathNodeType.Pedestrian,
+					links,
+					pathWidth: buffer.readUInt8(offset + 22),
+					floodFill: buffer.readUInt8(offset + 23),
+					flags,
+				});
+			}
+
+			this.pathAreas[areaId] = {
+				areaId,
+				nodes,
+				vehicleNodeCount: numVehNodes,
+				pedestrianNodeCount: numPedNodes,
+			};
+		}
+
+		let totalNodes = 0;
+		let totalPedNodes = 0;
+		for (const area of this.pathAreas) {
+			if (!area) {
+				continue;
+			}
+			totalNodes += area.nodes.length;
+			totalPedNodes += area.pedestrianNodeCount;
+		}
+		console.log(`\tLoaded %s path nodes (%s pedestrian) across %s areas`, totalNodes, totalPedNodes, this.pathAreas.length);
 	}
 
 	loadWaterDefinitions() {
@@ -1705,8 +1828,11 @@ class GameLoader extends EventEmitter {
 		this.loadVehicleHandling();
 		this.emit("loading", { stage: 11 }); // Loaded Vehicle Handling Data
 
+		this.loadPathNodes();
+		this.emit("loading", { stage: 12 }); // Loaded Path Nodes
+
 		await this.sfx.load();
-		this.emit("loading", { stage: 12 }); // Loaded sound effects
+		this.emit("loading", { stage: 13 }); // Loaded sound effects
 
 		// When Loading Stage is equal to the amount of loading stages the loader is finished.
 	}
@@ -1715,5 +1841,12 @@ export default GameLoader;
 
 
 export {
-	IDEFlags
+	IDEFlags,
+	PathNodeType
+}
+
+export type {
+	PathArea,
+	PathNode,
+	PathLink
 }

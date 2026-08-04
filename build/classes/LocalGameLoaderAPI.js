@@ -111,6 +111,11 @@ class LocalGameLoaderAPI {
             return this.loader.waterDefinitions;
         });
     }
+    getPathNodes() {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.loader.pathAreas;
+        });
+    }
     getLanguageString(key) {
         return __awaiter(this, void 0, void 0, function* () {
             return this.loader.readLanguageString(key);
