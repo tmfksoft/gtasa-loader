@@ -13,6 +13,11 @@ export default interface IPLObject {
         z: number;
         w: number;
     };
+    scale?: {
+        x: number;
+        y: number;
+        z: number;
+    };
     lod: number;
     lodObject?: IPLObject;
     iplIndex: number;

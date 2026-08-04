@@ -5,4 +5,6 @@ export default interface GTADat {
     splash: string[];
     txd: string[];
     dff: string[];
+    colFile: string[];
+    mapZone: string[];
 }

@@ -12,6 +12,7 @@ import ParsedIPL from "./interfaces/ipl/ParsedIPL";
 import MainIPL from "./interfaces/ipl/MainIPL";
 import WeatherDefinition from "./interfaces/WeatherDefinition";
 import WaterDefinition from "./interfaces/WaterDefinition";
+import GameVersion from "./interfaces/GameVersion";
 import PathArea from "./interfaces/paths/PathArea";
 import PathNode, { PathLink, PathNodeType } from "./interfaces/paths/PathNode";
 import Language from "./interfaces/Language";
@@ -43,6 +44,35 @@ declare class GameLoader extends EventEmitter {
     API: GameLoaderAPI;
     loadingStages: number;
     gtaData: GTADat;
+    /**
+     * Which game `gtaPath` points at - resolved by detectGame() at the very
+     * start of load(), since almost everything after that branches on it.
+     * Defaults to San Andreas so anything constructed but never loaded keeps
+     * behaving the way it always has.
+     */
+    gameVersion: GameVersion;
+    /**
+     * The master data file for each game. The name is the most reliable way
+     * to tell the three apart - every install has exactly one of these, and
+     * it's the file the game itself bootstraps from.
+     */
+    static readonly GAME_DAT_FILES: {
+        version: GameVersion;
+        file: string;
+    }[];
+    /**
+     * IMG archives (and the odd IDE) the games mount without listing them in
+     * their master .dat, so they have to be added by hand.
+     *
+     * GTA III and Vice City keep their models in gta3.img and their textures
+     * in a separate txd.img, both version 1 archives with a sibling .dir.
+     * Animations aren't in an archive at all there - they're a loose
+     * anim/ped.ifp - so there's no ANIM.IMG to preload.
+     */
+    static readonly IMPLICIT_FILES: Record<GameVersion, {
+        img: string[];
+        ide: string[];
+    }>;
     loadedIPLs: MainIPL[];
     ideObjects: IDEObject[];
     ideTimedObjects: IDETimedObject[];
@@ -71,6 +101,15 @@ declare class GameLoader extends EventEmitter {
     vehicleHandling: VehicleHandlingDefinitions;
     sfx: SFXReader;
     constructor(gtaPath: string);
+    /**
+     * Works out which game `gtaPath` points at from which master data file
+     * is present, and seeds gtaData with the archives that game mounts
+     * without listing them.
+     *
+     * Returns the resolved path to that master file so loadGTADat() doesn't
+     * have to look it up a second time.
+     */
+    detectGame(): string;
     loadGTADat(): void;
     /**
      * Loads the path node network from data/paths/NODES0.DAT .. NODES63.DAT.
@@ -165,5 +204,5 @@ declare class GameLoader extends EventEmitter {
     load(): Promise<void>;
 }
 export default GameLoader;
-export { IDEFlags, PathNodeType };
+export { GameVersion, IDEFlags, PathNodeType };
 export type { PathArea, PathNode, PathLink };

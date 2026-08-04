@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.PathNodeType = exports.IDEFlags = void 0;
+exports.PathNodeType = exports.IDEFlags = exports.GameVersion = void 0;
 const path_1 = __importDefault(require("path"));
 const fs_1 = __importDefault(require("fs"));
 const img_reader_1 = __importDefault(require("@majesticfudgie/img-reader"));
@@ -21,6 +21,8 @@ const txd_reader_1 = __importDefault(require("@majesticfudgie/txd-reader"));
 const col_reader_1 = __importDefault(require("@majesticfudgie/col-reader"));
 const ifp_reader_1 = __importDefault(require("@majesticfudgie/ifp-reader"));
 const pointer_buffer_1 = __importDefault(require("@majesticfudgie/pointer-buffer"));
+const GameVersion_1 = __importDefault(require("./interfaces/GameVersion"));
+exports.GameVersion = GameVersion_1.default;
 const PathNode_1 = require("./interfaces/paths/PathNode");
 Object.defineProperty(exports, "PathNodeType", { enumerable: true, get: function () { return PathNode_1.PathNodeType; } });
 const LocalGameLoaderAPI_1 = __importDefault(require("./classes/LocalGameLoaderAPI"));
@@ -49,26 +51,23 @@ class GameLoader extends events_1.default {
         this.API = new LocalGameLoaderAPI_1.default(this);
         this.loadingStages = 10; // This will change
         this.gtaData = {
-            img: [
-                // Preadd some core IMG files
-                'MODELS\\GTA3.IMG',
-                'MODELS\\GTA_INT.IMG',
-                'MODELS\\PLAYER.IMG',
-                // Not auto-mounted by the real game (it loads individual .ifp
-                // entries from this on demand, per context) - preadded anyway so
-                // loadAnimations() has every animation available up front, the
-                // same tradeoff already made for the loose ped.ifp/collision files.
-                'ANIM\\ANIM.IMG',
-            ],
-            ide: [
-                'DATA\\VEHICLES.IDE'
-            ],
+            img: [],
+            ide: [],
             ipl: [],
             splash: [],
             // Though not defined by the gta.dat file we can manually load some here.
             txd: [],
             dff: [],
+            colFile: [],
+            mapZone: [],
         };
+        /**
+         * Which game `gtaPath` points at - resolved by detectGame() at the very
+         * start of load(), since almost everything after that branches on it.
+         * Defaults to San Andreas so anything constructed but never loaded keeps
+         * behaving the way it always has.
+         */
+        this.gameVersion = GameVersion_1.default.SanAndreas;
         // Objects
         this.loadedIPLs = [];
         this.ideObjects = [];
@@ -114,21 +113,64 @@ class GameLoader extends events_1.default {
         };
         this.sfx = new sfx_reader_1.default(gtaPath);
     }
-    loadGTADat() {
-        const datPath = path_1.default.join(this.gtaPath, "data", "gta.dat");
-        if (!fs_1.default.existsSync(datPath)) {
-            throw new Error("Unable to find gta.dat!");
+    /**
+     * Works out which game `gtaPath` points at from which master data file
+     * is present, and seeds gtaData with the archives that game mounts
+     * without listing them.
+     *
+     * Returns the resolved path to that master file so loadGTADat() doesn't
+     * have to look it up a second time.
+     */
+    detectGame() {
+        const dataDir = path_1.default.join(this.gtaPath, "data");
+        // Directory casing varies between releases (data vs DATA), so resolve
+        // the real entry names once rather than guessing at either.
+        let entries = [];
+        if (fs_1.default.existsSync(dataDir)) {
+            entries = fs_1.default.readdirSync(dataDir);
         }
+        else if (fs_1.default.existsSync(path_1.default.join(this.gtaPath, "DATA"))) {
+            entries = fs_1.default.readdirSync(path_1.default.join(this.gtaPath, "DATA"));
+        }
+        for (const candidate of GameLoader.GAME_DAT_FILES) {
+            const match = entries.find(e => e.toLowerCase() === candidate.file);
+            if (match) {
+                this.gameVersion = candidate.version;
+                const resolved = fs_1.default.existsSync(dataDir)
+                    ? path_1.default.join(dataDir, match)
+                    : path_1.default.join(this.gtaPath, "DATA", match);
+                console.log(`Detected %s (%s)`, this.gameVersion, match);
+                const implicit = GameLoader.IMPLICIT_FILES[this.gameVersion];
+                this.gtaData.img.push(...implicit.img);
+                this.gtaData.ide.push(...implicit.ide);
+                return resolved;
+            }
+        }
+        throw new Error(`Unable to find a master data file in ${dataDir} - expected one of ` +
+            GameLoader.GAME_DAT_FILES.map(c => c.file).join(", ") +
+            `. Is this a GTA III, Vice City or San Andreas installation?`);
+    }
+    loadGTADat() {
+        var _a;
+        const datPath = this.detectGame();
         const rawDat = fs_1.default.readFileSync(datPath);
-        const lines = rawDat.toString().split('\r\n');
+        // GTA III's file is CRLF like the others, but splitting on \r\n alone
+        // leaves a stray \r on every line of anything saved with plain LF -
+        // which then ends up baked into the paths.
+        const lines = rawDat.toString().split(/\r?\n/);
         for (let line of lines) {
             // Skip comments.
             if (line.trim().startsWith("#")) {
                 continue;
             }
-            const ex = line.split(" ");
+            // Collapse runs of whitespace - III mixes tabs and spaces between
+            // the directive and its path.
+            const ex = line.trim().split(/\s+/);
             const type = ex[0].toLowerCase();
             const path = ex[1];
+            if (!path) {
+                continue;
+            }
             if (type === "img") {
                 this.gtaData.img.push(path);
             }
@@ -141,12 +183,24 @@ class GameLoader extends events_1.default {
             else if (type === "ipl") {
                 this.gtaData.ipl.push(path);
             }
+            else if (type === "colfile") {
+                // "COLFILE <index> <path>" - the leading number is the
+                // collision slot, which nothing here needs yet.
+                const colPath = (_a = ex[2]) !== null && _a !== void 0 ? _a : path;
+                this.gtaData.colFile.push(colPath);
+            }
+            else if (type === "mapzone") {
+                this.gtaData.mapZone.push(path);
+            }
         }
-        console.log("Loaded gta.dat:");
+        console.log(`Loaded %s:`, path_1.default.basename(datPath));
         console.log(`\tLoaded %s IMG Paths`, this.gtaData.img.length);
         console.log(`\tLoaded %s IDE Paths`, this.gtaData.ide.length);
         console.log(`\tLoaded %s IPL Paths`, this.gtaData.ipl.length);
         console.log(`\tLoaded %s SPLASH Paths`, this.gtaData.splash.length);
+        if (this.gtaData.colFile.length > 0) {
+            console.log(`\tLoaded %s COLFILE Paths`, this.gtaData.colFile.length);
+        }
     }
     /**
      * Loads the path node network from data/paths/NODES0.DAT .. NODES63.DAT.
@@ -382,6 +436,7 @@ class GameLoader extends events_1.default {
         return parsedIPL;
     }
     parseTextIPL(name, data) {
+        var _a;
         const parsedIPL = {
             name,
             inst: [],
@@ -427,24 +482,87 @@ class GameLoader extends events_1.default {
                 }
                 if (currentSection === "inst") {
                     const ex = line.split(",");
-                    const iplObject = {
-                        id: parseInt(ex[0]),
-                        modelName: ex[1].trim(),
-                        interior: parseInt(ex[2]),
-                        position: {
-                            x: parseFloat(ex[3]),
-                            y: parseFloat(ex[4]),
-                            z: parseFloat(ex[5]),
-                        },
-                        rotation: {
-                            x: parseFloat(ex[6]),
-                            y: parseFloat(ex[7]),
-                            z: parseFloat(ex[8]),
-                            w: parseFloat(ex[9]),
-                        },
-                        lod: parseInt(ex[10]),
-                        iplIndex: parsedIPL.inst.length
-                    };
+                    // The three games use different inst layouts, and the
+                    // column count tells them apart unambiguously:
+                    //
+                    //   11  San Andreas  id, model, interior, pos, rot, lod
+                    //   12  GTA III      id, model, pos, scale, rot
+                    //   13  Vice City    id, model, interior, pos, scale, rot
+                    //
+                    // Keying off the row itself rather than the detected game
+                    // keeps this honest for mods and for Vice City, which
+                    // hasn't been verified against a real install.
+                    let iplObject;
+                    if (ex.length >= 13) {
+                        iplObject = {
+                            id: parseInt(ex[0]),
+                            modelName: ex[1].trim(),
+                            interior: parseInt(ex[2]),
+                            position: {
+                                x: parseFloat(ex[3]),
+                                y: parseFloat(ex[4]),
+                                z: parseFloat(ex[5]),
+                            },
+                            scale: {
+                                x: parseFloat(ex[6]),
+                                y: parseFloat(ex[7]),
+                                z: parseFloat(ex[8]),
+                            },
+                            rotation: {
+                                x: parseFloat(ex[9]),
+                                y: parseFloat(ex[10]),
+                                z: parseFloat(ex[11]),
+                                w: parseFloat(ex[12]),
+                            },
+                            lod: -1,
+                            iplIndex: parsedIPL.inst.length,
+                        };
+                    }
+                    else if (ex.length === 12) {
+                        iplObject = {
+                            id: parseInt(ex[0]),
+                            modelName: ex[1].trim(),
+                            interior: 0,
+                            position: {
+                                x: parseFloat(ex[2]),
+                                y: parseFloat(ex[3]),
+                                z: parseFloat(ex[4]),
+                            },
+                            scale: {
+                                x: parseFloat(ex[5]),
+                                y: parseFloat(ex[6]),
+                                z: parseFloat(ex[7]),
+                            },
+                            rotation: {
+                                x: parseFloat(ex[8]),
+                                y: parseFloat(ex[9]),
+                                z: parseFloat(ex[10]),
+                                w: parseFloat(ex[11]),
+                            },
+                            lod: -1,
+                            iplIndex: parsedIPL.inst.length,
+                        };
+                    }
+                    else {
+                        iplObject = {
+                            id: parseInt(ex[0]),
+                            modelName: ex[1].trim(),
+                            interior: parseInt(ex[2]),
+                            position: {
+                                x: parseFloat(ex[3]),
+                                y: parseFloat(ex[4]),
+                                z: parseFloat(ex[5]),
+                            },
+                            rotation: {
+                                x: parseFloat(ex[6]),
+                                y: parseFloat(ex[7]),
+                                z: parseFloat(ex[8]),
+                                w: parseFloat(ex[9]),
+                            },
+                            lod: parseInt(ex[10]),
+                            iplIndex: parsedIPL.inst.length,
+                        };
+                    }
                     parsedIPL.inst.push(iplObject);
                 }
                 else if (currentSection === "cull") {
@@ -624,7 +742,10 @@ class GameLoader extends events_1.default {
                             z: parseFloat(ex[7]),
                         },
                         island: parseInt(ex[8]),
-                        text: ex[9].trim(),
+                        // San Andreas carries a GXT key for the zone's
+                        // on-screen name in a tenth column; GTA III has no
+                        // such column and uses the zone name itself.
+                        text: ((_a = ex[9]) !== null && _a !== void 0 ? _a : ex[0]).trim(),
                     });
                 }
                 else if (currentSection === "pick") {
@@ -888,7 +1009,19 @@ class GameLoader extends events_1.default {
                 continue;
             }
             const rawIMG = fs_1.default.readFileSync(fullPath);
-            const reader = new img_reader_1.default(rawIMG);
+            // GTA III and Vice City archives have no header - their directory
+            // lives in a sibling .dir file which has to be handed to the
+            // reader alongside the data.
+            let rawDir;
+            if (this.gameVersion !== GameVersion_1.default.SanAndreas) {
+                const dirPath = fullPath.replace(/\.img$/i, ".dir");
+                if (!fs_1.default.existsSync(dirPath)) {
+                    console.warn(`No .dir alongside %s - skipping (version 1 archives need one)`, fullPath);
+                    continue;
+                }
+                rawDir = fs_1.default.readFileSync(dirPath);
+            }
+            const reader = new img_reader_1.default(rawIMG, rawDir);
             this.imgReaders[imgPath] = reader;
             console.log("%s contains %s entries.", fullPath, reader.entries.length);
             for (let entry of reader.entries) {
@@ -1333,7 +1466,16 @@ class GameLoader extends events_1.default {
                 continue;
             }
             const gxtData = fs_1.default.readFileSync(gxtPath);
-            this.languageReaders[lang] = new LanguageReader_1.default(gxtData);
+            try {
+                this.languageReaders[lang] = new LanguageReader_1.default(gxtData);
+            }
+            catch (err) {
+                // GTA III and Vice City use an older GXT layout that
+                // LanguageReader doesn't handle yet. Text is optional for
+                // everything else the loader does, so warn rather than
+                // taking the entire load down with it.
+                console.warn(`Unable to parse GXT file for ${lang}, it will not be loaded:`, err.message);
+            }
         }
     }
     loadVehicleHandling() {
@@ -1589,11 +1731,62 @@ class GameLoader extends events_1.default {
             this.emit("loading", { stage: 11 }); // Loaded Vehicle Handling Data
             this.loadPathNodes();
             this.emit("loading", { stage: 12 }); // Loaded Path Nodes
-            yield this.sfx.load();
+            try {
+                yield this.sfx.load();
+            }
+            catch (err) {
+                // The audio layout is San Andreas specific (PakFiles.dat and
+                // friends) - GTA III and Vice City organise theirs differently.
+                // Sound is optional for everything else here, so don't let it
+                // take the whole load down.
+                console.warn("Unable to load sound effects, they will be unavailable:", err.message);
+            }
             this.emit("loading", { stage: 13 }); // Loaded sound effects
             // When Loading Stage is equal to the amount of loading stages the loader is finished.
         });
     }
 }
+/**
+ * The master data file for each game. The name is the most reliable way
+ * to tell the three apart - every install has exactly one of these, and
+ * it's the file the game itself bootstraps from.
+ */
+GameLoader.GAME_DAT_FILES = [
+    { version: GameVersion_1.default.SanAndreas, file: "gta.dat" },
+    { version: GameVersion_1.default.ViceCity, file: "gta_vc.dat" },
+    { version: GameVersion_1.default.III, file: "gta3.dat" },
+];
+/**
+ * IMG archives (and the odd IDE) the games mount without listing them in
+ * their master .dat, so they have to be added by hand.
+ *
+ * GTA III and Vice City keep their models in gta3.img and their textures
+ * in a separate txd.img, both version 1 archives with a sibling .dir.
+ * Animations aren't in an archive at all there - they're a loose
+ * anim/ped.ifp - so there's no ANIM.IMG to preload.
+ */
+GameLoader.IMPLICIT_FILES = {
+    [GameVersion_1.default.SanAndreas]: {
+        img: [
+            'MODELS\\GTA3.IMG',
+            'MODELS\\GTA_INT.IMG',
+            'MODELS\\PLAYER.IMG',
+            // Not auto-mounted by the real game (it loads individual .ifp
+            // entries from this on demand, per context) - preadded anyway so
+            // loadAnimations() has every animation available up front, the
+            // same tradeoff already made for the loose ped.ifp/collision files.
+            'ANIM\\ANIM.IMG',
+        ],
+        ide: ['DATA\\VEHICLES.IDE'],
+    },
+    [GameVersion_1.default.ViceCity]: {
+        img: ['MODELS\\GTA3.IMG', 'MODELS\\TXD.IMG'],
+        ide: ['DATA\\VEHICLES.IDE'],
+    },
+    [GameVersion_1.default.III]: {
+        img: ['MODELS\\GTA3.IMG', 'MODELS\\TXD.IMG'],
+        ide: ['DATA\\DEFAULT.IDE'],
+    },
+};
 exports.default = GameLoader;
 //# sourceMappingURL=index.js.map

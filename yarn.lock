@@ -7,20 +7,20 @@
   resolved "https://registry.yarnpkg.com/@majesticfudgie/col-reader/-/col-reader-1.0.0.tgz#4d30c55878bd2a3af5267d280b48532d2e4fe823"
   integrity sha512-EQS9KVxEWnpTgsUvaFav4pNkh/pNFkc1aNiqzfSvjyJ3Mu9n5xXSS3GeaigjgO+ZCNRpJ+d7Cdh0x4PS1LuQWA==
 
-"@majesticfudgie/dff-reader@^2.2.0":
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/@majesticfudgie/dff-reader/-/dff-reader-2.2.0.tgz#c4712314adffd140d409bd43b71e630299545161"
-  integrity sha512-wfTf/K6Ewh6FC0diMBDgItVW6OipoqcCf2M4iE7Se3aIqXuZc0O6PGjae/vAw6VvciVWysZBhh5Exp7NcLG8ug==
+"@majesticfudgie/dff-reader@^2.3.2":
+  version "2.3.2"
+  resolved "https://registry.yarnpkg.com/@majesticfudgie/dff-reader/-/dff-reader-2.3.2.tgz#a9c8734883814c3559d2569be1c1f0fc06199b70"
+  integrity sha512-caVhXgXxqkVf0qIxIrn3UZ+Or2Fa5Nlpmk93OWsNybtAQraCLKDpd+kBCsDm42BoJWGe0ZlmWggEcqlpgC3EYQ==
 
 "@majesticfudgie/ifp-reader@^1.0.0":
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/@majesticfudgie/ifp-reader/-/ifp-reader-1.0.0.tgz#8e1a49200b7d86406ff3019c7a79f4a375bab19b"
   integrity sha512-0D0idMWP4LNaZXFZQyk4nzrwEP75v4tgF8t6BRovJmsWf9bVYP/sMkiN9Zlrj2Ck61DY2aihS8jxZ6gMg//VIw==
 
-"@majesticfudgie/img-reader@^1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@majesticfudgie/img-reader/-/img-reader-1.0.0.tgz#e14ef6bbdae77db7adea01aa0296cf22e5879542"
-  integrity sha512-eUhYIeU920mFywHxWWyjWM6Mi4o+Ugs/ODXwgxL1Jx7eTYXjHfdzgHf74S2PH/d3Kq9mPog8xZZf5CDdagHZLA==
+"@majesticfudgie/img-reader@^1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@majesticfudgie/img-reader/-/img-reader-1.1.0.tgz#67594d0e0edcd10ab2523104897358c8c7c8e25e"
+  integrity sha512-m03k6bsnTtgnK7/gHQ+31GmPfnZahBOVSbfF3jk/i6yZqN68KUGnWSWBBkeBKuCZphIa8DEcwRE6K5f6eRpd7w==
 
 "@majesticfudgie/pointer-buffer@^1.0.1":
   version "1.0.1"
