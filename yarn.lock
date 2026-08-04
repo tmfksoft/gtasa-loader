@@ -34,10 +34,10 @@
   dependencies:
     "@majesticfudgie/pointer-buffer" "^1.0.1"
 
-"@majesticfudgie/txd-reader@^2.1.1":
-  version "2.1.1"
-  resolved "https://registry.yarnpkg.com/@majesticfudgie/txd-reader/-/txd-reader-2.1.1.tgz#310364be4ce71d993c1d1988edb269df313dedbf"
-  integrity sha512-LhiQd0zP0bU8/zI67Ou2kK/CZ/q8imXHvaK5ZqEiStBpwXgU/XyrgurEmcBVqfF90kOdOLmuMzIzTITOxPSETQ==
+"@majesticfudgie/txd-reader@^2.2.0":
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/@majesticfudgie/txd-reader/-/txd-reader-2.2.0.tgz#8f334301ca3153aaaed36a7f559070bcee766a59"
+  integrity sha512-KIhMo+L89qsJ79yK1xDHwIGbFmiTFq6jGz8v9UCtOdyuT0sr1hP4WzRU0ROIybZR7NNBIa5l2BwK1nNQhMs4vQ==
 
 "@types/node@^20.14.12":
   version "20.14.12"

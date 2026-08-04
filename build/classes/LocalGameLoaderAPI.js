@@ -150,19 +150,39 @@ class LocalGameLoaderAPI {
         });
     }
     // Let there be sound!
+    // The audio layout is San Andreas specific, so on a GTA III or Vice City
+    // install nothing here resolves and the underlying reader throws. These
+    // are singular-resource lookups, which this API returns null from when
+    // the resource doesn't exist - so report that rather than propagating an
+    // exception across the transport on every request.
     getStreamTrack(streamName, trackId) {
         return __awaiter(this, void 0, void 0, function* () {
-            return this.loader.sfx.getStreamTrack(streamName, trackId);
+            try {
+                return this.loader.sfx.getStreamTrack(streamName, trackId);
+            }
+            catch (_a) {
+                return null;
+            }
         });
     }
     getAudioStream(streamName) {
         return __awaiter(this, void 0, void 0, function* () {
-            return this.loader.sfx.getAudioStream(streamName);
+            try {
+                return this.loader.sfx.getAudioStream(streamName);
+            }
+            catch (_a) {
+                return null;
+            }
         });
     }
     getSoundEffect(packageName, bankIndex, slotIndex) {
         return __awaiter(this, void 0, void 0, function* () {
-            return this.loader.sfx.getSoundEffect(packageName, bankIndex, slotIndex);
+            try {
+                return this.loader.sfx.getSoundEffect(packageName, bankIndex, slotIndex);
+            }
+            catch (_a) {
+                return null;
+            }
         });
     }
     toWAV(effect) {

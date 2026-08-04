@@ -38,9 +38,9 @@ export default class LocalGameLoaderAPI implements GameLoaderAPI {
     getVehicleColorPalette(): Promise<import("../interfaces/Color").default[]>;
     getVehicleColors(): Promise<import("../interfaces/vehicles/VehicleColor").default[]>;
     getVehicleHandling(): Promise<import("../interfaces/vehicles/handling/VehicleHandlingDefinitions").default>;
-    getStreamTrack(streamName: string, trackId: number): Promise<import("@majesticfudgie/sfx-reader/build/interfaces/sfx/StreamTrack").default>;
-    getAudioStream(streamName: string): Promise<AudioStream>;
-    getSoundEffect(packageName: string, bankIndex: number, slotIndex: number): Promise<SoundEffect>;
+    getStreamTrack(streamName: string, trackId: number): Promise<import("@majesticfudgie/sfx-reader/build/interfaces/sfx/StreamTrack").default | null>;
+    getAudioStream(streamName: string): Promise<AudioStream | null>;
+    getSoundEffect(packageName: string, bankIndex: number, slotIndex: number): Promise<SoundEffect | null>;
     toWAV(effect: SoundEffect): Promise<Uint8Array>;
     on(eventName: string | symbol, listener: (...args: any[]) => void): GameLoader;
 }

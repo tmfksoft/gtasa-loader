@@ -229,7 +229,7 @@ export default interface GameLoaderAPI {
 	 * @param trackId Track ID (1 is first)
 	 * @returns Parsed StreamTrack with audio data and beats
 	 */
-	getStreamTrack: (streamName: string, trackId: number) => Promise<StreamTrack>,
+	getStreamTrack: (streamName: string, trackId: number) => Promise<StreamTrack | null>,
 
 	/**
 	 * Reads and parses and audio stream file from disk,
@@ -241,7 +241,7 @@ export default interface GameLoaderAPI {
 	 * @param streamName File to open e.g. AMBIENCE
 	 * @returns AudioStream with associated tracks
 	 */
-	getAudioStream: (streamName: string) => Promise<AudioStream>,
+	getAudioStream: (streamName: string) => Promise<AudioStream | null>,
 
 	/**
 	 * Retrieves a specific sound effect.
@@ -257,7 +257,7 @@ export default interface GameLoaderAPI {
 	 * @param bankIndex Bank Index - Starts at 1
 	 * @param slotIndex Slot Index - Starts at 1
 	 */
-	getSoundEffect: (packageName: string, bankIndex: number, slotIndex: number) => Promise<SoundEffect>;
+	getSoundEffect: (packageName: string, bankIndex: number, slotIndex: number) => Promise<SoundEffect | null>;
 
 	/**
 	 * Converts a sound effect's RAW PCM

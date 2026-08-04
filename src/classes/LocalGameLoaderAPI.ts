@@ -139,14 +139,31 @@ export default class LocalGameLoaderAPI implements GameLoaderAPI  {
 	}
 
 	// Let there be sound!
+	// The audio layout is San Andreas specific, so on a GTA III or Vice City
+	// install nothing here resolves and the underlying reader throws. These
+	// are singular-resource lookups, which this API returns null from when
+	// the resource doesn't exist - so report that rather than propagating an
+	// exception across the transport on every request.
 	async getStreamTrack(streamName: string, trackId: number) {
-		return this.loader.sfx.getStreamTrack(streamName, trackId);
+		try {
+			return this.loader.sfx.getStreamTrack(streamName, trackId);
+		} catch {
+			return null;
+		}
 	}
 	async getAudioStream(streamName: string) {
-		return this.loader.sfx.getAudioStream(streamName);
+		try {
+			return this.loader.sfx.getAudioStream(streamName);
+		} catch {
+			return null;
+		}
 	}
 	async getSoundEffect(packageName: string, bankIndex: number, slotIndex: number) {
-		return this.loader.sfx.getSoundEffect(packageName, bankIndex, slotIndex);
+		try {
+			return this.loader.sfx.getSoundEffect(packageName, bankIndex, slotIndex);
+		} catch {
+			return null;
+		}
 	}
 	async toWAV(effect: SoundEffect) {
 		// We're converting to a Uint8Array as browsers lack Buffer
