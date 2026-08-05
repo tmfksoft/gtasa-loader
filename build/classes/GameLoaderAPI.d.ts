@@ -6,6 +6,7 @@ import IDEObject from "../interfaces/ide/IDEObject";
 import IDETimedObject from "../interfaces/ide/IDETimedObject";
 import TXDFile from "@majesticfudgie/txd-reader/build/interfaces/TXDFile";
 import PixelData from "@majesticfudgie/txd-reader/build/interfaces/PixelData";
+import TextureInfo from "../interfaces/TextureInfo";
 import GXTFile from "../interfaces/language/GXTFile";
 import GeometryNode from "@majesticfudgie/dff-reader/build/interfaces/GeometryNode";
 import COLModel from "@majesticfudgie/col-reader/build/interfaces/COLModel";
@@ -97,6 +98,28 @@ export default interface GameLoaderAPI {
      * @returns Texture names, or an empty array if the TXD doesn't exist
      */
     getTextureNames: (txdPath: string) => Promise<string[]>;
+    /**
+     * Everything each texture in a TXD declares about itself - dimensions,
+     * storage format, mipmap count - without decoding any pixels.
+     *
+     * Same reasoning as getTextureNames(): txd-reader's TXDTexture can't cross
+     * a transport, and decoding a whole dictionary just to show a listing is
+     * wasteful when most of it will never be looked at.
+     *
+     * @returns One entry per texture, in storage order, or an empty array if
+     *          the TXD doesn't exist
+     */
+    getTextureInfo: (txdPath: string) => Promise<TextureInfo[]>;
+    /**
+     * Decodes one mipmap level of a texture to raw RGBA.
+     *
+     * Level 0 is the full-size image and is what getTexture() returns; higher
+     * levels are the successively halved copies the game uses at distance.
+     *
+     * @param level Mipmap level, 0-based
+     * @returns Pixel data, or null if the TXD, texture or level doesn't exist
+     */
+    getTextureMipmap: (txdPath: string, textureName: string, level: number) => Promise<PixelData | null>;
     /**
      * Loads an IDE Object from the games IDE definitions.
      * @param id ID of Object

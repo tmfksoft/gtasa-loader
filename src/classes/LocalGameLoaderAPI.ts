@@ -16,6 +16,7 @@ import SoundEffect from "@majesticfudgie/sfx-reader/build/interfaces/SoundEffect
 import ResolvedUVAnimationChannel from "../interfaces/ResolvedUVAnimationChannel";
 import COLModel from "@majesticfudgie/col-reader/build/interfaces/COLModel";
 import IFPAnimation from "@majesticfudgie/ifp-reader/build/interfaces/IFPAnimation";
+import TextureInfo from "../interfaces/TextureInfo";
 
 export default class LocalGameLoaderAPI implements GameLoaderAPI  {
 
@@ -93,6 +94,47 @@ export default class LocalGameLoaderAPI implements GameLoaderAPI  {
 	async getTextureNames(txdPath: string): Promise<string[]> {
 		const txd = this.loader.getTXD(txdPath);
 		return txd ? [...txd.textureList] : [];
+	}
+
+	async getTextureInfo(txdPath: string): Promise<TextureInfo[]> {
+		const txd = this.loader.getTXD(txdPath);
+		if (!txd) {
+			return [];
+		}
+
+		// Copied field by field rather than spread - TXDTexture keeps a private
+		// reference to its chunk, which wouldn't survive a structured clone.
+		return txd.getTextures().map(texture => ({
+			name: texture.name,
+			alphaName: texture.alphaName,
+			width: texture.width,
+			height: texture.height,
+			depth: texture.depth,
+			format: texture.format,
+			mipmapCount: texture.mipmapCount,
+		}));
+	}
+
+	async getTextureMipmap(txdPath: string, textureName: string, level: number): Promise<PixelData | null> {
+		const txd = this.loader.getTXD(txdPath);
+		if (!txd) {
+			return null;
+		}
+
+		const texture = txd.getTextures().find(t => t.name.toLowerCase() === textureName.toLowerCase());
+		if (!texture || level < 0 || level >= texture.mipmapCount) {
+			return null;
+		}
+
+		try {
+			return texture.getMipmap(level);
+		} catch (err) {
+			// Some textures declare more levels than they actually store, and
+			// the odd format isn't decodable at all - a missing level is a
+			// normal outcome here, not a reason to take the caller down.
+			console.error(`Failed to decode mipmap %d of "%s" in "%s"`, level, textureName, txdPath, err);
+			return null;
+		}
 	}
 
 	async getIDEObject(id: number): Promise<IDEObject | IDETimedObject | IDEAnimatedObject | null> {

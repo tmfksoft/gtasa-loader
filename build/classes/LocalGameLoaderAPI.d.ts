@@ -14,6 +14,7 @@ import AudioStream from "@majesticfudgie/sfx-reader/build/interfaces/AudioStream
 import SoundEffect from "@majesticfudgie/sfx-reader/build/interfaces/SoundEffect";
 import COLModel from "@majesticfudgie/col-reader/build/interfaces/COLModel";
 import IFPAnimation from "@majesticfudgie/ifp-reader/build/interfaces/IFPAnimation";
+import TextureInfo from "../interfaces/TextureInfo";
 export default class LocalGameLoaderAPI implements GameLoaderAPI {
     protected loader: GameLoader;
     constructor(loader: GameLoader);
@@ -25,6 +26,8 @@ export default class LocalGameLoaderAPI implements GameLoaderAPI {
     getAnimationNames(packageName: string): Promise<string[]>;
     getTexture(txdPath: string, textureName: string): Promise<PixelData | null>;
     getTextureNames(txdPath: string): Promise<string[]>;
+    getTextureInfo(txdPath: string): Promise<TextureInfo[]>;
+    getTextureMipmap(txdPath: string, textureName: string, level: number): Promise<PixelData | null>;
     getIDEObject(id: number): Promise<IDEObject | IDETimedObject | IDEAnimatedObject | null>;
     getIPL(): Promise<MainIPL[]>;
     getWeather(): Promise<{
