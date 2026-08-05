@@ -186,6 +186,24 @@ declare class GameLoader extends EventEmitter {
      * @param txdPath Path to TXD, can be on disk or within an .img
      * @param textureName Name of texture within the TXD.
      */
+    private textureIndex?;
+    /**
+     * Finds a TXD containing `textureName`, for textures a model references
+     * but that aren't in the TXD its IDE entry names.
+     *
+     * San Andreas barely needs this - 1 of 634 texture references in a
+     * 250 model sample came from elsewhere. GTA III leans on it heavily
+     * (191 of 1141, 16.7%): its road pieces in particular declare
+     * generic.txd while their textures live in whichever area TXD happens to
+     * be resident, which the real game gets away with because it loads TXDs
+     * per area into shared slots. The same texture is duplicated across
+     * every area TXD that needs it (curb_64H is in 46 of them), so any copy
+     * will do.
+     *
+     * The index costs a parse of every TXD in the mounted archives, so it's
+     * built on the first miss rather than during load.
+     */
+    findTextureOwner(textureName: string): string | null;
     getTexture(txdPath: string, textureName: string): Promise<PixelData | null>;
     /**
      * Parses one GTA III timecyc.dat row into the same shape San Andreas

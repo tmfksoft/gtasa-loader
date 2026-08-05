@@ -1503,6 +1503,61 @@ class GameLoader extends EventEmitter {
 	 * @param txdPath Path to TXD, can be on disk or within an .img
 	 * @param textureName Name of texture within the TXD.
 	 */
+	// textureName (lowercased) -> the TXD file it was found in. Built on
+	// first use by findTextureOwner(), see there for why.
+	private textureIndex?: Map<string, string>;
+
+	/**
+	 * Finds a TXD containing `textureName`, for textures a model references
+	 * but that aren't in the TXD its IDE entry names.
+	 *
+	 * San Andreas barely needs this - 1 of 634 texture references in a
+	 * 250 model sample came from elsewhere. GTA III leans on it heavily
+	 * (191 of 1141, 16.7%): its road pieces in particular declare
+	 * generic.txd while their textures live in whichever area TXD happens to
+	 * be resident, which the real game gets away with because it loads TXDs
+	 * per area into shared slots. The same texture is duplicated across
+	 * every area TXD that needs it (curb_64H is in 46 of them), so any copy
+	 * will do.
+	 *
+	 * The index costs a parse of every TXD in the mounted archives, so it's
+	 * built on the first miss rather than during load.
+	 */
+	findTextureOwner(textureName: string): string | null {
+		if (!this.textureIndex) {
+			this.textureIndex = new Map();
+			for (const imgPath in this.imgReaders) {
+				const reader = this.imgReaders[imgPath];
+				for (const entry of reader.entries) {
+					if (!entry.fileName.toLowerCase().endsWith(".txd")) {
+						continue;
+					}
+					const raw = reader.readFile(entry.fileName);
+					if (!raw) {
+						continue;
+					}
+					let txd: TXDReader;
+					try {
+						txd = new TXDReader(raw);
+					} catch {
+						continue;
+					}
+					for (const texture of txd.getTextures()) {
+						const key = texture.name.toLowerCase();
+						// First writer wins - any copy of a duplicated texture
+						// is as good as another.
+						if (!this.textureIndex.has(key)) {
+							this.textureIndex.set(key, entry.fileName);
+						}
+					}
+				}
+			}
+			console.log(`\tIndexed %s texture names across all TXDs`, this.textureIndex.size);
+		}
+
+		return this.textureIndex.get(textureName.toLowerCase()) ?? null;
+	}
+
 	async getTexture(txdPath: string, textureName: string): Promise<PixelData | null> {
 		const parsedPath = this.parsePath(txdPath);
 
@@ -1516,13 +1571,22 @@ class GameLoader extends EventEmitter {
 
 		const txd = this.getTXD(txdPath);
 
-		if (!txd) {
+		if (txd) {
+			const tex = txd.getPixelData(textureName);
+			if (tex) {
+				return tex;
+			}
+		}
+
+		// Not where the model said it would be - find a TXD that does have it
+		// rather than leaving the caller with nothing to bind.
+		const owner = this.findTextureOwner(textureName);
+		if (!owner) {
 			return null;
 		}
 
-		const tex = txd.getPixelData(textureName);
-
-		return tex;
+		const fallbackTxd = this.getTXD(owner);
+		return fallbackTxd ? fallbackTxd.getPixelData(textureName) : null;
 	}
 
 	/**
