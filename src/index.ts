@@ -1210,8 +1210,21 @@ class GameLoader extends EventEmitter {
 				}
 
 				if (currentSection === "cars") {
-					const ex = line.split(",").map((l) => l.trim());
-					
+					let ex = line.split(",").map((l) => l.trim());
+
+					// Three retail lines (585 emperor, 586 wayfarer, 593 dodo) are
+					// missing the comma between modelName and txdName - e.g.
+					// "593, dodo\t\tdodo, plane, ..." instead of "593, dodo, dodo,
+					// plane, ...". A valid modelName is always a single token, so
+					// treat leftover internal whitespace there as the missing
+					// comma and re-split, rather than hardcoding these three
+					// vehicles by name (and missing it if another release has the
+					// same typo somewhere else).
+					if (/\s/.test(ex[1])) {
+						const [modelName, ...rest] = ex[1].split(/\s+/);
+						ex = [ ex[0], modelName, rest.join(" "), ...ex.slice(2) ];
+					}
+
 					const vehId = parseInt(ex[0]);
 					const modelName = ex[1];
 					const txdName = ex[2];
