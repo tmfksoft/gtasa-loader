@@ -78,6 +78,7 @@ class GameLoader extends events_1.default {
         // Pedestrian and vehicle path node network, one entry per NODES*.DAT
         // area file, indexed by area id (sparse if a file is missing).
         this.pathAreas = [];
+        this.carGenerators = [];
         // Vehicle colours, alpha is always 255
         this.vehicleColorPalette = [];
         // Colours a vehicle can spawn with
@@ -305,6 +306,108 @@ class GameLoader extends events_1.default {
             totalPedNodes += area.pedestrianNodeCount;
         }
         console.log(`\tLoaded %s path nodes (%s pedestrian) across %s areas`, totalNodes, totalPedNodes, this.pathAreas.length);
+    }
+    /**
+     * Reads the parked car generators out of the compiled mission script.
+     *
+     * San Andreas doesn't place parked cars in the IPLs the way GTA III and
+     * Vice City do - every retail SA IPL has an empty `cars` section. They're
+     * created at script start instead, by CREATE_CAR_GENERATOR (opcode
+     * 0x014B) in data/script/main.scm.
+     *
+     * Properly walking the code segment would mean knowing the parameter
+     * signature of every opcode in the language, which is a decompiler's job
+     * and far more than this needs. Instead this scans for the two opcode
+     * bytes and then tries to read the 13 parameters that must follow, in
+     * SCM's self-describing parameter encoding - each one is a type byte plus
+     * its value. A coincidental byte pair inside unrelated data almost never
+     * decodes cleanly all the way through, and the last parameter has to be
+     * the global variable the opcode writes the generator's handle into,
+     * which is a strong final check. Against retail main.scm this finds 199
+     * of 326 byte matches valid, with only four distinct parameter shapes
+     * between them and every model id inside the vehicle range.
+     *
+     * Generators whose position comes from script variables rather than
+     * literals are skipped - there's no static answer for where those end up.
+     */
+    loadCarGenerators() {
+        const scriptPath = path_1.default.join(this.gtaPath, "data", "script", "main.scm");
+        if (!fs_1.default.existsSync(scriptPath)) {
+            console.warn("Unable to find data/script/main.scm, no car generators loaded");
+            return;
+        }
+        const script = fs_1.default.readFileSync(scriptPath);
+        this.carGenerators = [];
+        // SCM parameter encoding: a type byte, then that type's value.
+        const readParameter = (offset) => {
+            switch (script[offset]) {
+                case 0x01: return { value: script.readInt32LE(offset + 1), isLiteral: true, size: 5 };
+                case 0x02: return { value: script.readUInt16LE(offset + 1), isLiteral: false, size: 3 }; // global var
+                case 0x03: return { value: script.readUInt16LE(offset + 1), isLiteral: false, size: 3 }; // local var
+                case 0x04: return { value: script.readInt8(offset + 1), isLiteral: true, size: 2 };
+                case 0x05: return { value: script.readInt16LE(offset + 1), isLiteral: true, size: 3 };
+                case 0x06: return { value: script.readFloatLE(offset + 1), isLiteral: true, size: 5 };
+                default: return null;
+            }
+        };
+        let skipped = 0;
+        for (let offset = 0; offset + 2 < script.length; offset++) {
+            // Opcode 0x014B, little endian.
+            if (script[offset] !== 0x4B || script[offset + 1] !== 0x01) {
+                continue;
+            }
+            const parameters = [];
+            let cursor = offset + 2;
+            let valid = true;
+            for (let i = 0; i < 13; i++) {
+                const parameter = readParameter(cursor);
+                if (!parameter) {
+                    valid = false;
+                    break;
+                }
+                parameters.push(parameter);
+                cursor += parameter.size;
+            }
+            if (!valid) {
+                continue;
+            }
+            // The opcode's last parameter is the variable it stores the new
+            // generator's handle in, so a literal there means this isn't one.
+            if (parameters[12].isLiteral) {
+                continue;
+            }
+            // Position, angle and model must all be literal to be placeable.
+            if (!parameters.slice(0, 5).every(parameter => parameter.isLiteral)) {
+                skipped++;
+                continue;
+            }
+            // Vehicle model ids occupy 400-611, and -1 means "pick one".
+            // Anything else means the bytes decoded cleanly by luck rather
+            // than because they were really this opcode - a run of zeroes
+            // reads as a valid string of int8 parameters, for instance.
+            const modelId = parameters[4].value;
+            if (modelId !== -1 && (modelId < 400 || modelId > 611)) {
+                continue;
+            }
+            this.carGenerators.push({
+                offset,
+                position: {
+                    x: parameters[0].value,
+                    y: parameters[1].value,
+                    z: parameters[2].value,
+                },
+                angle: parameters[3].value,
+                modelId,
+                primaryColour: parameters[5].value,
+                secondaryColour: parameters[6].value,
+                forceSpawn: parameters[7].value !== 0,
+                alarmChance: parameters[8].value,
+                doorLockChance: parameters[9].value,
+                minDelay: parameters[10].value,
+                maxDelay: parameters[11].value,
+            });
+        }
+        console.log(`\tLoaded %s car generators from main.scm%s`, this.carGenerators.length, skipped > 0 ? ` (skipped ${skipped} with script-driven positions)` : "");
     }
     loadWaterDefinitions() {
         const waterFilePath = path_1.default.join(this.gtaPath, "data", "water.dat");
@@ -1900,6 +2003,8 @@ class GameLoader extends events_1.default {
             this.emit("loading", { stage: 11 }); // Loaded Vehicle Handling Data
             this.loadPathNodes();
             this.emit("loading", { stage: 12 }); // Loaded Path Nodes
+            this.loadCarGenerators();
+            this.emit("loading", { stage: 13 }); // Loaded Car Generators
             try {
                 yield this.sfx.load();
             }

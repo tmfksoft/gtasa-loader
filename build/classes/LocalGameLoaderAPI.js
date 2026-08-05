@@ -163,6 +163,11 @@ class LocalGameLoaderAPI {
             return this.loader.pathAreas;
         });
     }
+    getCarGenerators() {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.loader.carGenerators;
+        });
+    }
     getLanguageString(key) {
         return __awaiter(this, void 0, void 0, function* () {
             return this.loader.readLanguageString(key);

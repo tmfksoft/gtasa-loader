@@ -10,6 +10,7 @@ import IDETimedObject from "../interfaces/ide/IDETimedObject";
 import TXDFile from "@majesticfudgie/txd-reader/build/interfaces/TXDFile";
 import PixelData from "@majesticfudgie/txd-reader/build/interfaces/PixelData";
 import TextureInfo from "../interfaces/TextureInfo";
+import CarGenerator from "../interfaces/CarGenerator";
 import GXTFile from "../interfaces/language/GXTFile";
 import GeometryNode from "@majesticfudgie/dff-reader/build/interfaces/GeometryNode";
 import COLModel from "@majesticfudgie/col-reader/build/interfaces/COLModel";
@@ -198,6 +199,19 @@ export default interface GameLoaderAPI {
 	 * @returns Path areas indexed by area id
 	 */
 	getPathNodes: () => Promise<PathArea[]>,
+
+	/**
+	 * Gets the parked car generators - the fixed spots the game puts vehicles
+	 * at, filling driveways, car parks, airfields and docks.
+	 *
+	 * San Andreas keeps these in the compiled mission script rather than in
+	 * the IPLs (where GTA III and Vice City put them), so this comes from
+	 * main.scm. Traffic isn't included: the game spawns that dynamically
+	 * along the path node network, not from a fixed list.
+	 *
+	 * @returns Car generators with literal positions, in script order
+	 */
+	getCarGenerators: () => Promise<CarGenerator[]>,
 
 	/**
 	 * Fetches the language string for the key provided.

@@ -15,6 +15,7 @@ import SoundEffect from "@majesticfudgie/sfx-reader/build/interfaces/SoundEffect
 import COLModel from "@majesticfudgie/col-reader/build/interfaces/COLModel";
 import IFPAnimation from "@majesticfudgie/ifp-reader/build/interfaces/IFPAnimation";
 import TextureInfo from "../interfaces/TextureInfo";
+import CarGenerator from "../interfaces/CarGenerator";
 export default class LocalGameLoaderAPI implements GameLoaderAPI {
     protected loader: GameLoader;
     constructor(loader: GameLoader);
@@ -36,6 +37,7 @@ export default class LocalGameLoaderAPI implements GameLoaderAPI {
     getWeatherDefinitions(): Promise<WeatherDefinition[]>;
     getWater(): Promise<WaterDefinition[]>;
     getPathNodes(): Promise<PathArea[]>;
+    getCarGenerators(): Promise<CarGenerator[]>;
     getLanguageString(key: string): Promise<string | null>;
     getLanguageData(language: string): Promise<import("../interfaces/language/GXTFile").default | null>;
     getVehicles(): Promise<import("../interfaces/vehicles/VehicleDefinition").default[]>;

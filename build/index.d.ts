@@ -14,6 +14,7 @@ import WeatherDefinition from "./interfaces/WeatherDefinition";
 import WaterDefinition from "./interfaces/WaterDefinition";
 import GameVersion from "./interfaces/GameVersion";
 import PathArea from "./interfaces/paths/PathArea";
+import CarGenerator from "./interfaces/CarGenerator";
 import PathNode, { PathLink, PathNodeType } from "./interfaces/paths/PathNode";
 import Language from "./interfaces/Language";
 import GameLoaderAPI from "./classes/GameLoaderAPI";
@@ -80,6 +81,7 @@ declare class GameLoader extends EventEmitter {
     waterDefinitions: WaterDefinition[];
     vehicleDefinitions: VehicleDefinition[];
     pathAreas: PathArea[];
+    carGenerators: CarGenerator[];
     vehicleColorPalette: Color[];
     vehicleColors: VehicleColor[];
     weatherDefinitions: WeatherDefinition[];
@@ -133,6 +135,30 @@ declare class GameLoader extends EventEmitter {
      * targets a vehicle node (or vice versa) - the two networks are separate.
      */
     loadPathNodes(): void;
+    /**
+     * Reads the parked car generators out of the compiled mission script.
+     *
+     * San Andreas doesn't place parked cars in the IPLs the way GTA III and
+     * Vice City do - every retail SA IPL has an empty `cars` section. They're
+     * created at script start instead, by CREATE_CAR_GENERATOR (opcode
+     * 0x014B) in data/script/main.scm.
+     *
+     * Properly walking the code segment would mean knowing the parameter
+     * signature of every opcode in the language, which is a decompiler's job
+     * and far more than this needs. Instead this scans for the two opcode
+     * bytes and then tries to read the 13 parameters that must follow, in
+     * SCM's self-describing parameter encoding - each one is a type byte plus
+     * its value. A coincidental byte pair inside unrelated data almost never
+     * decodes cleanly all the way through, and the last parameter has to be
+     * the global variable the opcode writes the generator's handle into,
+     * which is a strong final check. Against retail main.scm this finds 199
+     * of 326 byte matches valid, with only four distinct parameter shapes
+     * between them and every model id inside the vehicle range.
+     *
+     * Generators whose position comes from script variables rather than
+     * literals are skipped - there's no static answer for where those end up.
+     */
+    loadCarGenerators(): void;
     loadWaterDefinitions(): void;
     parseBinaryIPL(name: string | string[], data: Buffer | Buffer[]): ParsedIPL;
     parseTextIPL(name: string | string[], data: Buffer | Buffer[]): ParsedIPL;

@@ -17,6 +17,7 @@ import ResolvedUVAnimationChannel from "../interfaces/ResolvedUVAnimationChannel
 import COLModel from "@majesticfudgie/col-reader/build/interfaces/COLModel";
 import IFPAnimation from "@majesticfudgie/ifp-reader/build/interfaces/IFPAnimation";
 import TextureInfo from "../interfaces/TextureInfo";
+import CarGenerator from "../interfaces/CarGenerator";
 
 export default class LocalGameLoaderAPI implements GameLoaderAPI  {
 
@@ -158,6 +159,10 @@ export default class LocalGameLoaderAPI implements GameLoaderAPI  {
 
 	async getPathNodes(): Promise<PathArea[]> {
 		return this.loader.pathAreas;
+	}
+
+	async getCarGenerators(): Promise<CarGenerator[]> {
+		return this.loader.carGenerators;
 	}
 
 	async getLanguageString(key: string) {
