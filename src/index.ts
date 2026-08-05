@@ -1572,14 +1572,22 @@ class GameLoader extends EventEmitter {
 			lowCloudsColor: colour(27),
 			// 30 is the top cloud colour, which this shape has no slot for.
 			bottomCloudColor: colour(33),
-			// The trailing RGBA is III's screen tint rather than a water
-			// colour, so it's surfaced as the colour correction pair - which
-			// is what it actually behaves like - and left out of waterColor.
 			waterColor: { r: 255, g: 255, b: 255, a: 255 },
-			alpha1: parseInt(ex[39]),
-			RGB1: colour(36),
-			alpha2: parseInt(ex[39]),
-			RGB2: colour(36),
+
+			// San Andreas' colour correction pair has no GTA III equivalent,
+			// so it's left neutral: consumers multiply by (RGB1 + RGB2), and
+			// 255 + 0 is an identity multiply.
+			//
+			// Columns 36-39 are a trailing RGBA that III's own header comment
+			// doesn't document (it only accounts for 36 of the 40 values).
+			// They swing from orange at dawn to blue at night, which fits a
+			// post-processing tint rather than anything to multiply the scene
+			// by - feeding them in here as a correction pair tinted the whole
+			// world blue. Left unmapped until what they drive is confirmed.
+			alpha1: 255,
+			RGB1: { r: 255, g: 255, b: 255, a: 255 },
+			alpha2: 255,
+			RGB2: { r: 0, g: 0, b: 0, a: 255 },
 			cloudAlpha: { r: 255, g: 255, b: 255, a: 255 },
 		};
 	}
