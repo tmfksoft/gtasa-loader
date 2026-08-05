@@ -1525,6 +1525,65 @@ class GameLoader extends EventEmitter {
 		return tex;
 	}
 
+	/**
+	 * Parses one GTA III timecyc.dat row into the same shape San Andreas
+	 * rows produce, so consumers don't have to care which game they're
+	 * looking at.
+	 *
+	 * III writes 40 values where San Andreas writes 51, in this order (the
+	 * file documents it in its own header comment):
+	 *
+	 *   Amb(3) Dir(3) SkyTop(3) SkyBot(3) SunCore(3) SunCorona(3)
+	 *   SunSz SprSz SprBght  Shdw LightShd TreeShd  FarClp FogSt LightOnGround
+	 *   LowClouds(3) TopClouds(3) BottomClouds(3)  then a trailing RGBA
+	 *
+	 * Everything through LightOnGround maps across directly. III has no
+	 * separate ambient colour for dynamic objects, no water tint and no
+	 * colour correction pair, so those are filled in from the nearest
+	 * equivalent rather than invented.
+	 */
+	private parseGTA3Weather(ex: string[]): WeatherDefinition {
+		const colour = (i: number, a = 255) => ({
+			r: parseInt(ex[i]),
+			g: parseInt(ex[i + 1]),
+			b: parseInt(ex[i + 2]),
+			a,
+		});
+
+		return {
+			ambientColor: colour(0),
+			// No distinct dynamic-object ambient in III - the one ambient
+			// value lights everything.
+			ambientObjectColor: colour(0),
+			directLight: colour(3),
+			skyTop: colour(6),
+			skyBottom: colour(9),
+			sunCore: colour(12),
+			sunCorona: colour(15),
+			sunSize: parseFloat(ex[18]),
+			spriteSize: parseFloat(ex[19]),
+			spriteBrightness: parseFloat(ex[20]),
+			shadowIntensity: parseInt(ex[21]),
+			lightShd: parseInt(ex[22]),
+			poleShd: parseInt(ex[23]),
+			farClipping: parseFloat(ex[24]),
+			fogStart: parseFloat(ex[25]),
+			lightOnGround: parseFloat(ex[26]),
+			lowCloudsColor: colour(27),
+			// 30 is the top cloud colour, which this shape has no slot for.
+			bottomCloudColor: colour(33),
+			// The trailing RGBA is III's screen tint rather than a water
+			// colour, so it's surfaced as the colour correction pair - which
+			// is what it actually behaves like - and left out of waterColor.
+			waterColor: { r: 255, g: 255, b: 255, a: 255 },
+			alpha1: parseInt(ex[39]),
+			RGB1: colour(36),
+			alpha2: parseInt(ex[39]),
+			RGB2: colour(36),
+			cloudAlpha: { r: 255, g: 255, b: 255, a: 255 },
+		};
+	}
+
 	public loadWeather() {
 		// We'll ignore the PAL version.
 		const timeCycPath = path.join(this.gtaPath, "data", "timecyc.dat");
@@ -1542,8 +1601,20 @@ class GameLoader extends EventEmitter {
 				// Skip comments
 				continue;
 			}
-			const ex = line.split('\t').join(" ").split(" ");
-			
+			// Split on any run of whitespace. Splitting on single spaces left
+			// an empty string for every repeated space, which shifted every
+			// column after it - San Andreas happens to use one separator
+			// between values so it got away with it, GTA III doesn't.
+			const ex = line.trim().split(/\s+/);
+
+			// GTA III writes 40 values per line, San Andreas 51. The count
+			// identifies the layout on its own, so no need to consult the
+			// detected game here.
+			if (ex.length < 51) {
+				this.weatherDefinitions.push(this.parseGTA3Weather(ex));
+				continue;
+			}
+
 			const weather: WeatherDefinition = {
 				ambientColor: {
 					r: parseInt(ex[0]),
@@ -1672,21 +1743,68 @@ class GameLoader extends EventEmitter {
 			"EXTRACOLOURS_2",
 		];
 
-		const timeCount = 8;
-		let offset = 0;
+		// GTA III has four weathers with an entry per hour, rather than San
+		// Andreas' 23 weathers with eight entries each. Derive both the names
+		// and the stride from what was actually parsed instead of assuming
+		// San Andreas - the old code sliced 23x8 unconditionally, which on a
+		// III install produced empty definition arrays for every weather and
+		// no usable weather at all.
+		const gta3WeatherNames = ["SUNNY", "CLOUDY", "RAINY", "FOGGY"];
 
-		for (let name of weatherNames) {
+		// Prefer the detected game, but fall back to whichever set actually
+		// divides the file evenly. loadWeather() can be called on its own
+		// (before detectGame() has run), and picking a set that doesn't fit
+		// silently produces weathers with missing entries.
+		const divides = (set: string[]) => this.weatherDefinitions.length > 0
+			&& this.weatherDefinitions.length % set.length === 0;
+
+		let names = (this.gameVersion === GameVersion.SanAndreas) ? weatherNames : gta3WeatherNames;
+		if (!divides(names)) {
+			const alternative = (names === weatherNames) ? gta3WeatherNames : weatherNames;
+			if (divides(alternative)) {
+				names = alternative;
+			}
+		}
+		// San Andreas' 184 entries divide by both 23 and 4, so disambiguate
+		// on the total: only III ships 96.
+		if (this.weatherDefinitions.length === 96) {
+			names = gta3WeatherNames;
+		}
+
+		const timeCount = Math.floor(this.weatherDefinitions.length / names.length);
+
+		if (timeCount <= 0) {
+			console.warn(
+				`timecyc.dat held %s definitions, which doesn't divide into %s weathers - weather will be unavailable`,
+				this.weatherDefinitions.length, names.length,
+			);
+			return;
+		}
+
+		let offset = 0;
+		for (let name of names) {
 			const definitions: WeatherDefinition[] = [];
 
 			for (let i=0; i<timeCount; i++) {
-				definitions.push(this.weatherDefinitions[offset]);
-
+				const definition = this.weatherDefinitions[offset];
+				if (definition) {
+					definitions.push(definition);
+				}
 				offset++;
 			}
 
-
 			this.weather[name] = definitions;
 		}
+
+		console.log(`Loaded %s weathers (%s entries each)`, names.length, timeCount);
+	}
+
+	/**
+	 * Every weather name available for the loaded game - San Andreas and
+	 * GTA III use entirely different sets, so callers shouldn't hardcode one.
+	 */
+	getWeatherNames(): string[] {
+		return Object.keys(this.weather);
 	}
 
 	loadLanguages() {

@@ -187,7 +187,30 @@ declare class GameLoader extends EventEmitter {
      * @param textureName Name of texture within the TXD.
      */
     getTexture(txdPath: string, textureName: string): Promise<PixelData | null>;
+    /**
+     * Parses one GTA III timecyc.dat row into the same shape San Andreas
+     * rows produce, so consumers don't have to care which game they're
+     * looking at.
+     *
+     * III writes 40 values where San Andreas writes 51, in this order (the
+     * file documents it in its own header comment):
+     *
+     *   Amb(3) Dir(3) SkyTop(3) SkyBot(3) SunCore(3) SunCorona(3)
+     *   SunSz SprSz SprBght  Shdw LightShd TreeShd  FarClp FogSt LightOnGround
+     *   LowClouds(3) TopClouds(3) BottomClouds(3)  then a trailing RGBA
+     *
+     * Everything through LightOnGround maps across directly. III has no
+     * separate ambient colour for dynamic objects, no water tint and no
+     * colour correction pair, so those are filled in from the nearest
+     * equivalent rather than invented.
+     */
+    private parseGTA3Weather;
     loadWeather(): void;
+    /**
+     * Every weather name available for the loaded game - San Andreas and
+     * GTA III use entirely different sets, so callers shouldn't hardcode one.
+     */
+    getWeatherNames(): string[];
     loadLanguages(): void;
     loadVehicleHandling(): void;
     readLanguageString(gxtKey: string): string | null;
