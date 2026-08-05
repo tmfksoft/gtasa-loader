@@ -100,6 +100,18 @@ export default interface GameLoaderAPI {
 	getTexture: (txdPath: string, textureName: string) => Promise<PixelData | null>,
 
 	/**
+	 * Every texture name inside a TXD, in the order they're stored.
+	 *
+	 * getTXD() hands back a reader whose parsed chunk tree can't survive a
+	 * structured clone, so it's unusable across a transport - this returns
+	 * just the names, which is what listing a dictionary actually needs.
+	 * Pair each with getTexture() to decode one.
+	 *
+	 * @returns Texture names, or an empty array if the TXD doesn't exist
+	 */
+	getTextureNames: (txdPath: string) => Promise<string[]>,
+
+	/**
 	 * Loads an IDE Object from the games IDE definitions.
 	 * @param id ID of Object
 	 * @returns 

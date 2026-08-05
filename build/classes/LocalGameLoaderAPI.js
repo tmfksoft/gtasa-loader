@@ -86,6 +86,12 @@ class LocalGameLoaderAPI {
             return texture;
         });
     }
+    getTextureNames(txdPath) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const txd = this.loader.getTXD(txdPath);
+            return txd ? [...txd.textureList] : [];
+        });
+    }
     getIDEObject(id) {
         return __awaiter(this, void 0, void 0, function* () {
             return this.loader.getObject(id);

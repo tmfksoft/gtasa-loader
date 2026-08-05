@@ -90,6 +90,11 @@ export default class LocalGameLoaderAPI implements GameLoaderAPI  {
 		return texture;
 	}
 
+	async getTextureNames(txdPath: string): Promise<string[]> {
+		const txd = this.loader.getTXD(txdPath);
+		return txd ? [...txd.textureList] : [];
+	}
+
 	async getIDEObject(id: number): Promise<IDEObject | IDETimedObject | IDEAnimatedObject | null> {
 		return this.loader.getObject(id);
 	}

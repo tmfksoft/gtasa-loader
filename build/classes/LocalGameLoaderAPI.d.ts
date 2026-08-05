@@ -24,6 +24,7 @@ export default class LocalGameLoaderAPI implements GameLoaderAPI {
     getAnimationPackageNames(): Promise<string[]>;
     getAnimationNames(packageName: string): Promise<string[]>;
     getTexture(txdPath: string, textureName: string): Promise<PixelData | null>;
+    getTextureNames(txdPath: string): Promise<string[]>;
     getIDEObject(id: number): Promise<IDEObject | IDETimedObject | IDEAnimatedObject | null>;
     getIPL(): Promise<MainIPL[]>;
     getWeather(): Promise<{
