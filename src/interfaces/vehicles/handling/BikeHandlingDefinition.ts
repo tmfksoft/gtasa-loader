@@ -22,7 +22,7 @@ export default interface BikeHandlingDefinition {
 	brakeDeceleration: number,
 	brakeBias: number,
 	abs: boolean, // 0/1 in handling.cfg
-	steeringLock: boolean, // Unsure
+	steeringLock: number, // Max steering angle in degrees
 	suspensionForceLevel: 'L' | 'M' | 'H' | string, // Low, Medium, High
 	suspensionDampingLevel: 'L' | 'M' | 'H' | string, // Low, Medium, High
 	suspensionHighSpdComDamp: number,

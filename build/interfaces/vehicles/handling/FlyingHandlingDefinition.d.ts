@@ -23,7 +23,7 @@ export default interface FlyingHandlingDefinition {
     brakeDeceleration: number;
     brakeBias: number;
     abs: boolean;
-    steeringLock: boolean;
+    steeringLock: number;
     suspensionForceLevel: 'L' | 'M' | 'H' | string;
     suspensionDampingLevel: 'L' | 'M' | 'H' | string;
     suspensionHighSpdComDamp: number;

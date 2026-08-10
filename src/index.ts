@@ -2121,7 +2121,7 @@ class GameLoader extends EventEmitter {
 					brakeDeceleration: parseFloat(ex[17]),
 					brakeBias: parseFloat(ex[18]),
 					abs: (ex[19] === "0" ? false: true),
-					steeringLock: (ex[20] === "0" ? false: true),
+					steeringLock: parseFloat(ex[20]),
 					suspensionForceLevel: ex[21],
 					suspensionDampingLevel: ex[22],
 					suspensionHighSpdComDamp: parseFloat(ex[23]),

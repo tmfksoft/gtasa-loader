@@ -63,6 +63,16 @@ export default interface GameLoaderAPI {
      */
     getCollisionModel: (modelName: string) => Promise<COLModel | null>;
     /**
+     * A vehicle's own collision, straight out of its .dff's embedded
+     * Collision_Model RW section - GTA:SA vehicles don't use the standalone
+     * models/coll/vehicles.col getCollisionModel() looks up (that file is a
+     * near-empty leftover from III/VC's pipeline; real SA vehicle collision
+     * lives in each DFF instead).
+     * @param modelName Vehicle model name, without extension (case-insensitive)
+     * @returns Parsed collision model, or null if the vehicle/chunk doesn't exist
+     */
+    getVehicleCollisionModel: (modelName: string) => Promise<COLModel | null>;
+    /**
      * Looks up a single animation clip by its package (IFP file name,
      * without extension - e.g. "ped", "airport") and animation name (both
      * case-insensitive, matching how the game itself resolves them).

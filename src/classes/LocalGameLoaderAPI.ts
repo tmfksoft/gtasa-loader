@@ -15,6 +15,7 @@ import AudioStream from "@majesticfudgie/sfx-reader/build/interfaces/AudioStream
 import SoundEffect from "@majesticfudgie/sfx-reader/build/interfaces/SoundEffect";
 import ResolvedUVAnimationChannel from "../interfaces/ResolvedUVAnimationChannel";
 import COLModel from "@majesticfudgie/col-reader/build/interfaces/COLModel";
+import COLReader from "@majesticfudgie/col-reader";
 import IFPAnimation from "@majesticfudgie/ifp-reader/build/interfaces/IFPAnimation";
 import TextureInfo from "../interfaces/TextureInfo";
 import CarGenerator from "../interfaces/CarGenerator";
@@ -69,6 +70,32 @@ export default class LocalGameLoaderAPI implements GameLoaderAPI  {
 
 	async getCollisionModel(modelName: string): Promise<COLModel | null> {
 		return this.loader.getCollisionModel(modelName);
+	}
+
+	/**
+	 * A vehicle's own collision, straight out of its .dff - GTA:SA vehicles
+	 * don't use the standalone models/coll/vehicles.col most tools expect
+	 * (that file is a near-empty leftover from III/VC's pipeline); their
+	 * real collision is embedded in each DFF as a Collision_Model RW
+	 * section instead. Returns null for a model with no such chunk (most
+	 * non-vehicle DFFs) or that isn't found at all.
+	 */
+	async getVehicleCollisionModel(modelName: string): Promise<COLModel | null> {
+		const dffLoader = this.loader.getDFF(`${modelName}.dff`);
+		if (!dffLoader) {
+			return null;
+		}
+		const collisionData = dffLoader.getCollisionData();
+		if (!collisionData) {
+			return null;
+		}
+		try {
+			const colReader = new COLReader(collisionData);
+			return colReader.models[0] ?? null;
+		} catch (err) {
+			console.warn("Failed to parse embedded collision for %s:", modelName, err);
+			return null;
+		}
 	}
 
 	async getAnimation(packageName: string, animationName: string): Promise<IFPAnimation | null> {

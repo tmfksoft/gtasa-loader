@@ -8,7 +8,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+const col_reader_1 = __importDefault(require("@majesticfudgie/col-reader"));
 class LocalGameLoaderAPI {
     constructor(loader) {
         this.loader = loader;
@@ -60,6 +64,35 @@ class LocalGameLoaderAPI {
     getCollisionModel(modelName) {
         return __awaiter(this, void 0, void 0, function* () {
             return this.loader.getCollisionModel(modelName);
+        });
+    }
+    /**
+     * A vehicle's own collision, straight out of its .dff - GTA:SA vehicles
+     * don't use the standalone models/coll/vehicles.col most tools expect
+     * (that file is a near-empty leftover from III/VC's pipeline); their
+     * real collision is embedded in each DFF as a Collision_Model RW
+     * section instead. Returns null for a model with no such chunk (most
+     * non-vehicle DFFs) or that isn't found at all.
+     */
+    getVehicleCollisionModel(modelName) {
+        return __awaiter(this, void 0, void 0, function* () {
+            var _a;
+            const dffLoader = this.loader.getDFF(`${modelName}.dff`);
+            if (!dffLoader) {
+                return null;
+            }
+            const collisionData = dffLoader.getCollisionData();
+            if (!collisionData) {
+                return null;
+            }
+            try {
+                const colReader = new col_reader_1.default(collisionData);
+                return (_a = colReader.models[0]) !== null && _a !== void 0 ? _a : null;
+            }
+            catch (err) {
+                console.warn("Failed to parse embedded collision for %s:", modelName, err);
+                return null;
+            }
         });
     }
     getAnimation(packageName, animationName) {

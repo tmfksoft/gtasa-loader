@@ -22,6 +22,15 @@ export default class LocalGameLoaderAPI implements GameLoaderAPI {
     getDFF(filepath: string): Promise<GeometryNode | null>;
     getTXD(filepath: string): Promise<TXDFile | null>;
     getCollisionModel(modelName: string): Promise<COLModel | null>;
+    /**
+     * A vehicle's own collision, straight out of its .dff - GTA:SA vehicles
+     * don't use the standalone models/coll/vehicles.col most tools expect
+     * (that file is a near-empty leftover from III/VC's pipeline); their
+     * real collision is embedded in each DFF as a Collision_Model RW
+     * section instead. Returns null for a model with no such chunk (most
+     * non-vehicle DFFs) or that isn't found at all.
+     */
+    getVehicleCollisionModel(modelName: string): Promise<COLModel | null>;
     getAnimation(packageName: string, animationName: string): Promise<IFPAnimation | null>;
     getAnimationPackageNames(): Promise<string[]>;
     getAnimationNames(packageName: string): Promise<string[]>;
